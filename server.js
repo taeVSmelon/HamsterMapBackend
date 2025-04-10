@@ -91,10 +91,7 @@ app.get('/loginDiscord', async (req, res) => {
 
 app.get('/authorizeDiscord', async (req, res) => {
     const state = req.query.state;
-    console.log(state);
-    if (!state) {
-        return res.status(400).json({ message: 'State not provided' });
-    }
+    if (!state) return res.status(400).json({ message: 'State not provided' });
     if( !stateCache[state] ) return res.status(400).json({ message: 'State not found' });
     return res.status(200).json(stateCache[state]);
 });
@@ -106,6 +103,3 @@ app.get('/getUser', async (req, res) => {
     if (!data) return res.status(400).json({ message: "User not found" });
     res.status(200).json(data);
 });
-
-
-
