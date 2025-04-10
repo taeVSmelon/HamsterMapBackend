@@ -38,14 +38,9 @@ app.post('/loginDiscord', async (req, res) => {
             console.log(response);
             const { id } = response;
             try {
-                const ress = await fetch(`./findById/${id}`);
-                if (!ress.ok) {
-                    return res.status(400).json('Network response was not ok');
-                }
-                const data = await res.json();
-                const datas = await userModel.findOne({ discord_id: discordId });
-                if (!datas) return res.status(400).json({ message: "User not found" });
-                res.status(200).json(datas.username);
+                const data = await userModel.findOne({ discord_id: id });
+                if (!data) return res.status(400).json({ message: "User not found" });
+                res.status(200).json(data.username);
             }
             catch (error) {
                 return res.status(400).json('Error:', error);
