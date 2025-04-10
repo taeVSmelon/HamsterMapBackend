@@ -25,7 +25,7 @@ app.post('/login', async (req, res) => {
     res.status(200).json({ message: "Login successful", user: data.username });
 });
 
-app.post('/loginDiscord', async (req, res) => {
+app.get('/loginDiscord', async (req, res) => {
     const accessToken = req.query.access_token;
     const tokenType = req.query.token_type;
     fetch('https://discord.com/api/users/@me', {
