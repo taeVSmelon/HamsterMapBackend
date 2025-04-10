@@ -1,6 +1,8 @@
 const express = require('express');
+const axios = require('axios');
 const connectDB = require('./db.js');
 const userModel = require('./Models/user.js');
+const querystring = require('querystring');
 const PORT = process.env.PORT || 8000;
 const app = express();
 
@@ -26,6 +28,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/loginDiscord', async (req, res) => {
+<<<<<<< Updated upstream
     const accessToken = req.query.access_token;
     const tokenType = req.query.token_type;
     fetch('https://discord.com/api/users/@me', {
@@ -41,12 +44,63 @@ app.get('/loginDiscord', async (req, res) => {
                 const data = await userModel.findOne({ discord_id: id });
                 if (!data) return res.status(400).json({ message: "User not found" });
                 res.status(200).json(data.username);
+=======
+    const code = req.query.code;
+
+    if (!code) {
+        return res.status(400).json({ message: 'Authorization code not provided' });
+    }
+
+    try {
+        // Step 1: Exchange code for access token
+        const tokenResponse = await axios.post('https://discord.com/api/oauth2/token',
+            querystring.stringify({
+                client_id: process.env.CLIENT_ID,
+                client_secret: process.env.CLIENT_SECRET,
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri: process.env.REDIRECT_URI,
+                scope: 'identify+email+guilds',
+            }),
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+>>>>>>> Stashed changes
             }
-            catch (error) {
-                return res.status(400).json('Error:', error);
-            }
-    });
-    
+        );
+
+        const { access_token, token_type } = tokenResponse.data;
+
+        if (!access_token) {
+            return res.status(400).json({ message: 'Failed to obtain access token', error: tokenResponse.data });
+        }
+
+        // Step 2: Fetch user info from Discord
+        const userResponse = await axios.get('https://discord.com/api/users/@me', {
+            headers: {
+                Authorization: `${token_type} ${access_token}`,
+            },
+        });
+
+        const discordUser = userResponse.data;
+
+        if (!discordUser.id) {
+            return res.status(400).json({ message: 'Failed to fetch user from Discord', error: discordUser });
+        }
+
+        // Step 3: Lookup user in your DB
+        const user = await userModel.findOne({ discord_id: discordUser.id });
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({ username: user.username });
+
+    } catch (error) {
+        console.error('Error during Discord OAuth:', error.response?.data || error.message);
+        return res.status(500).json({ message: 'Internal server error', error: error.response?.data || error.message });
+    }
 });
 
 app.get('/getUser', async (req, res) => {
