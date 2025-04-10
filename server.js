@@ -83,7 +83,6 @@ app.get('/loginDiscord', async (req, res) => {
         }
 
         return res.status(200).send("Login successful");
-
     } catch (error) {
         console.error('Error during Discord OAuth:', error.response?.data || error.message);
         return res.status(500).json({ message: 'Internal server error', error: error.response?.data || error.message });
