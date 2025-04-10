@@ -5,7 +5,7 @@ const userModel = require('./Models/user.js');
 const querystring = require('querystring');
 const PORT = process.env.PORT || 8000;
 const app = express();
-let stateCache = {};
+const stateCache = {};
 
 connectDB();
 app.use(express.json())
@@ -53,7 +53,7 @@ app.get('/loginDiscord', async (req, res) => {
             }
         );
 
-        const { access_token, token_type } = tokenResponse.data;
+        const { access_token, refresh_token, token_type } = tokenResponse.data;
 
         if (!access_token) {
             return res.status(400).json({ message: 'Failed to obtain access token', error: tokenResponse.data });
@@ -76,7 +76,13 @@ app.get('/loginDiscord', async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
-        return res.status(200).json("Login successful");
+
+        stateCache[state] = {
+            accessToken: access_token,
+            refreshToken: refresh_token
+        }
+
+        return res.status(200).send("Login successful");
 
     } catch (error) {
         console.error('Error during Discord OAuth:', error.response?.data || error.message);
@@ -86,6 +92,7 @@ app.get('/loginDiscord', async (req, res) => {
 
 app.get('/authorizeDiscord', async (req, res) => {
     const state = req.query.state;
+    console.log(state);
     if (!state) {
         return res.status(400).json({ message: 'State not provided' });
     }
