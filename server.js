@@ -28,6 +28,9 @@ app.post('/login', async (req, res) => {
 app.post('/loginDiscord', async (req, res) => {
 
     const token = req.body.token;
+    const fragment = new URLSearchParams(token.location.hash.slice(1));
+    const accessToken = getWithExpiry('access_token') || fragment.get('access_token');
+    const tokenType = getWithExpiry('token_type') || fragment.get('token_type');
     fetch('https://discord.com/api/users/@me', {
         headers: {
             authorization: `${tokenType} ${accessToken}`,
