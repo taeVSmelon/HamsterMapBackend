@@ -18,24 +18,46 @@ app.get('/', (req, res) => {
 app.post('/login', async (req, res) => {
     const user = req.body.username;
     const pass = req.body.password;
-    const data = await userModel.findOne({username: user});
+    const data = await userModel.findOne({ username: user });
     // console.log(data);
-    if(!data) return res.status(400).json({message: "User not found"});
-    if(data.password !== pass) return res.status(400).json({message: "Incorrect password"});
-    res.status(200).json({message: "Login successful", data});
+    if (!data) return res.status(400).json({ message: "User not found" });
+    if (data.password !== pass) return res.status(400).json({ message: "Incorrect password" });
+    res.status(200).json({ message: "Login successful", user: data.username });
 });
 
 app.post('/loginDiscord', async (req, res) => {
-    const discordId = req.body.discordId;
-    const data = await userModel.findOne({discord_id: discordId});
-    if(!data) return res.status(400).json({message: "User not found"});
-    res.status(200).json({message: "Login successful", data});
+
+    const token = req.body.token;
+    fetch('https://discord.com/api/users/@me', {
+        headers: {
+            authorization: `${tokenType} ${accessToken}`,
+        },
+    })
+        .then(result => result.json())
+        .then(async response => {
+            console.log(response);
+            const { id } = response;
+            try {
+                const ress = await fetch(`./findById/${id}`);
+                if (!ress.ok) {
+                    return res.status(400).json('Network response was not ok');
+                }
+                const data = await res.json();
+                const datas = await userModel.findOne({ discord_id: discordId });
+                if (!datas) return res.status(400).json({ message: "User not found" });
+                res.status(200).json(datas.username);
+            }
+            catch (error) {
+                return res.status(400).json('Error:', error);
+            }
+    });
+    
 });
 
 app.get('/getUser', async (req, res) => {
     const user = req.query.username;
-    const data = await userModel.findOne({username: user});
-    if(!data) return res.status(400).json({message: "User not found"});
+    const data = await userModel.findOne({ username: user });
+    if (!data) return res.status(400).json({ message: "User not found" });
     res.status(200).json(data);
 });
 
