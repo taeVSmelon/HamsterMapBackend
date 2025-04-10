@@ -28,23 +28,6 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/loginDiscord', async (req, res) => {
-<<<<<<< Updated upstream
-    const accessToken = req.query.access_token;
-    const tokenType = req.query.token_type;
-    fetch('https://discord.com/api/users/@me', {
-        headers: {
-            authorization: `${tokenType} ${accessToken}`,
-        },
-    })
-        .then(result => result.json())
-        .then(async response => {
-            console.log(response);
-            const { id } = response;
-            try {
-                const data = await userModel.findOne({ discord_id: id });
-                if (!data) return res.status(400).json({ message: "User not found" });
-                res.status(200).json(data.username);
-=======
     const code = req.query.code;
 
     if (!code) {
@@ -58,15 +41,14 @@ app.get('/loginDiscord', async (req, res) => {
                 client_id: process.env.CLIENT_ID,
                 client_secret: process.env.CLIENT_SECRET,
                 grant_type: 'authorization_code',
-                code,
+                code: code,
                 redirect_uri: process.env.REDIRECT_URI,
-                scope: 'identify+email+guilds',
+                scope: 'identify email guilds',
             }),
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
->>>>>>> Stashed changes
             }
         );
 
