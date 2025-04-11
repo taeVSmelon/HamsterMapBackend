@@ -35,7 +35,7 @@ app.post("/login", async (req, res) => {
   if (data.password !== pass) {
     return res.status(400).json({ message: "Incorrect password" });
   }
-  res.status(200).json({ message: "Login successful", user: data.username });
+  res.status(200).json({ message: "Login successful", username: data.username });
 });
 
 app.get("/loginDiscord", async (req, res) => {
