@@ -3,6 +3,7 @@ const axios = require("axios");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
 const querystring = require("querystring");
+const jwt = require("jsonwebtoken");
 const PORT = process.env.PORT || 8000;
 const app = express();
 const stateCache = {};
@@ -93,12 +94,15 @@ app.get("/loginDiscord", async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
-
-    stateCache[state] = {
+    const token = jwt.sign({
       username: user.username,
       accessToken: access_token,
       refreshToken: refresh_token,
-    };
+    }, process.env.JWT_SECRET,
+      { 
+        expiresIn: "10h" // มาปรับได้
+      });
+    stateCache[state] = token;
 
     return res.status(200).send("Login successful");
   } catch (error) {
@@ -119,11 +123,12 @@ app.get("/authorizeDiscord", async (req, res) => {
   if (!stateCache[state]) {
     return res.status(400).json({ message: "State not found" });
   }
-  return res.status(200).json(stateCache[state]);
+  res.status(200).json(stateCache[state]);
+  return delete stateCache[state];
 });
 
-app.get("/getUser", async (req, res) => {
-  const user = req.query.username;
+app.get("/getUser/:username", async (req, res) => {
+  const user = req.params.username;
   const data = await userModel.findOne({ username: user });
   if (!data) return res.status(400).json({ message: "User not found" });
   res.status(200).json(data);
