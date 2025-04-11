@@ -95,6 +95,7 @@ app.get("/loginDiscord", async (req, res) => {
     }
 
     stateCache[state] = {
+      username: user.username,
       accessToken: access_token,
       refreshToken: refresh_token,
     };
