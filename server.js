@@ -2,13 +2,17 @@ const express = require("express");
 const axios = require("axios");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
+const http = require('http');
 const querystring = require("querystring");
+const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
 const jwt = require("jsonwebtoken");
-const PORT = process.env.PORT || 8000;
 const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 8000;
 const stateCache = {};
 
 connectDB();
+
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -19,13 +23,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.listen(PORT, () => {
-  console.log(`server listening on ${PORT}`);
-});
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+// app.get("/", (req, res) => {
+//   res.send("Hello World!");
+// });
 
 app.post("/login", async (req, res) => {
   const user = req.body.username;
@@ -168,3 +168,13 @@ app.get("/leaderBoard/:game", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+setupWebsocket(app, server);
+
+server.listen(PORT, () => {
+  console.log(`server listening on ${PORT}`);
+});
+
+// app.listen(PORT, () => {
+//   console.log(`server listening on ${PORT}`);
+// });
