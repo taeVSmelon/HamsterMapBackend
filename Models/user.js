@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+//const 
 const stageSchema = new mongoose.Schema({
     type: { type: String, required: true },
     stageId: { type: Number, required: true },
@@ -17,41 +18,32 @@ const clearStage = new mongoose.Schema({
     website: { type: [stageSchema], default: [] }
 });
 
-const dataSchema = new mongoose.Schema({
-  fullname: { type: String, required: true },
-  nick: { type: String, required: true },
-  age: { type: String },
-  line: { type: String },
-  mobile: { type: String },
-  email: { type: String, required: true },
-  rank: { type: String },
-  xp: { type: String },
-  coin: { type: String },
-  code: { type: String },
-  course: { type: String },
-  stat: { type: String },
-  youtube: { type: String },
-  token: { type: String },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  storage: { type: String },
-  avatar: { type: String },
-  friendly: { type: Number },
-  friends: { type: [String] },
-  hp: { type: Number, default: null },
-  mp: { type: Number, default: null },
-  updated_at: { type: Date, default: Date.now },
-  finish: { type: String },
-  approve: { type: String },
-  cstage: { type: String },
-  consultant: { type: String },
-  lineName: { type: String },
-  remark: { type: String },
-  games: { type: [String], default: [] },
-  lastAuthentication: { type: Date },
+const scoreSchema = new mongoose.Schema({
+  python: { type: Number, default: 0 },
+  unity: { type: Number, default: 0 },
+  blender: { type: Number, default: 0 },
+  website: { type: Number, default: 0 },
+});
+
+const statSchema = new mongoose.Schema({
+  level :{ type: Number, default: 0 },
+  maxExp : { type: Number, default: 0 },
+  exp : { type: Number, default: 0 },
+  maxHealth : { type: Number, default: 0 },
+  // inventory : { type: [String], default: [] },
+  // equipment : { type: [String], default: [] },
   clearedStages: { type: clearStage, default: {} },
 });
 
-const dataModel = mongoose.model("PHC_Backend", dataSchema, "PHC_Backend");
+const dataSchema = new mongoose.Schema({
+  id : { type: Number, required: true, unique: true },
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  friend: { type: [String] },
+  stats: {type: statSchema, default: {} },
+  score : { type: scoreSchema, default: 0 }
+});
+
+const dataModel = mongoose.model("UserData", dataSchema, "UserData");
 
 module.exports = dataModel;

@@ -99,7 +99,7 @@ app.get("/loginDiscord", async (req, res) => {
       accessToken: access_token,
       refreshToken: refresh_token,
     }, process.env.JWT_SECRET,
-      { 
+      {
         expiresIn: "10h" // มาปรับได้
       });
     stateCache[state] = token;
@@ -132,4 +132,39 @@ app.get("/getUser/:username", async (req, res) => {
   const data = await userModel.findOne({ username: user });
   if (!data) return res.status(400).json({ message: "User not found" });
   res.status(200).json(data);
+});
+
+app.get("/leaderBoard/:game", async (req, res) => {
+  const game = req.params.game;
+
+  // Validate game parameter
+  const validGames = ['python', 'unity', 'blender', 'website'];
+  if (!validGames.includes(game)) {
+    return res.status(400).json({
+      message: "Invalid game type. Must be one of: python, unity, blender, website"
+    });
+  }
+
+  try {
+    const sortQuery = {};
+    sortQuery[`score.${game}`] = -1; // -1 for descending order
+
+    const data = await userModel.find()
+      .sort(sortQuery)
+      .limit(100);
+    console.log(data);
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "No leaderboard data found" });
+    }
+    var leaderboard = data.map((player) => {
+      return {
+        id: player.id,
+        username: player.username,
+        score: player.score[game]
+      };
+    });
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
