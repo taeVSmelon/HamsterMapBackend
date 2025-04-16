@@ -1,8 +1,8 @@
-const setupWebsocket = (app, server) => {
-  const RaidBoss = require("./Models/raid.js");
-  const WebSocket = require("ws");
-  const url = require("url");
+const RaidBoss = require("./Models/raid.js");
+const WebSocket = require("ws");
+const url = require("url");
 
+const setupWebsocket = (app, server) => {
   const wss = new WebSocket.Server({ server });
   const WEBHOOK_SECRET = "hamsterHub";
 
@@ -17,13 +17,15 @@ const setupWebsocket = (app, server) => {
     for (const ws of clients) {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
+        console.log("Message sent to", raidClients.get(ws), ":", message);
+      } else {
+        console.log("Client closed:", raidClients.get(ws));
       }
     }
   }
 
   wss.on("connection", (ws, req) => {
-    const { query } = url.parse(req.url, true);
-    const { secret, event, playerId } = query;
+    const { secret, event, id: userId } = req.headers;
 
     if (secret !== WEBHOOK_SECRET) {
       ws.close(1008, "Unauthorized");
@@ -32,9 +34,9 @@ const setupWebsocket = (app, server) => {
 
     console.log(`New connection: ${event || "unknown"}`);
 
-    if (event === "raid" && playerId) {
+    if (event === "raid" && userId) {
       if (raidBoss.active) {
-        raidClients.set(ws, playerId);
+        raidClients.set(ws, userId);
         ws.send(
           JSON.stringify({
             e: "RS",
@@ -84,22 +86,26 @@ const setupWebsocket = (app, server) => {
             `${userId} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
           );
 
-          if (updated) {
-            broadcast(raidClients.keys(), { e: "UBH", h: raidBoss.health });
-          }
+          // console.log(`updated: ${updated}`);
+          // if (updated) {
+          //   broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
+          // }
+          broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
 
           if (raidBoss.health <= 0) {
             console.log(`Raid Ended. Players: ${raidBoss.playerJoins.size}`);
             raidBoss.deactivate();
-            broadcast(raidClients.keys(), { e: "RE", w: true });
+            broadcast([...raidClients.keys()], { e: "RE", w: true });
           }
           break;
       }
     });
-
+    
     ws.on("close", () => {
-      notifyClients.delete(ws);
-      raidClients.delete(ws);
+      if (notifyClients.has(ws))
+        notifyClients.delete(ws);
+      else if (raidClients.has(ws))
+        raidClients.delete(ws);
     });
   });
 
@@ -120,7 +126,7 @@ const setupWebsocket = (app, server) => {
   app.post("/notify/stop-raid", (req, res) => {
     raidBoss.deactivate();
     broadcast(notifyClients, { e: "RE", w: false });
-    broadcast(raidClients.keys(), { e: "RE", w: false });
+    broadcast([...raidClients.keys()], { e: "RE", w: false });
     return res.json({ success: true });
   });
 

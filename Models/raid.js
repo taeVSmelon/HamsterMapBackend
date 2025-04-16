@@ -26,8 +26,6 @@ class RaidBoss {
       this.updateHealthChange = currentPercent;
     }
 
-    console.log("healthChanged: " + healthChanged);
-
     return healthChanged;
   }
 
