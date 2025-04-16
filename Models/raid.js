@@ -3,12 +3,14 @@ class RaidBoss {
     this.reset();
   }
 
-  activate(bossPrefabName, maxHealth) {
+  activate(bossPrefabName, maxHealth, damage) {
     this.active = true;
     this.bossPrefabName = bossPrefabName;
     this.maxHealth = maxHealth;
     this.health = maxHealth;
-    this.updateHealthChange = 100;
+    this.damage = damage;
+    this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
+      100;
     this.playerJoins = new Set();
   }
 
@@ -24,6 +26,8 @@ class RaidBoss {
       this.updateHealthChange = currentPercent;
     }
 
+    console.log("healthChanged: " + healthChanged);
+
     return healthChanged;
   }
 
@@ -36,6 +40,7 @@ class RaidBoss {
     this.bossPrefabName = null;
     this.maxHealth = 0;
     this.health = 0;
+    this.damage = 0;
     this.updateHealthChange = 0;
     this.playerJoins = new Set();
   }

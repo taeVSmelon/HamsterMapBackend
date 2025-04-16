@@ -14,12 +14,14 @@ const stateCache = {};
 connectDB();
 
 app.use(express.json());
+app.set('trust proxy', true);
 
 app.use((req, res, next) => {
   const currentTime = new Date().toISOString();
   const method = req.method;
   const path = req.originalUrl;
-  console.log(`${currentTime} - ${method} - ${path}`);
+  const ip = req.ip || req.connection.remoteAddress;
+  console.log(`${currentTime} - ${ip} - ${method} - ${path}`);
   next();
 });
 
@@ -152,7 +154,7 @@ app.get("/leaderBoard/:game", async (req, res) => {
     const data = await userModel.find()
       .sort(sortQuery)
       .limit(100);
-    console.log(data);
+    // console.log(data);
     if (!data || data.length === 0) {
       return res.status(404).json({ message: "No leaderboard data found" });
     }

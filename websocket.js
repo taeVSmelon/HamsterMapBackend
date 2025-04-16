@@ -41,6 +41,7 @@ const setupWebsocket = (app, server) => {
             b: raidBoss.bossPrefabName,
             mH: raidBoss.maxHealth,
             h: raidBoss.health,
+            d: raidBoss.damage
           }),
         );
       } else ws.close();
@@ -53,6 +54,7 @@ const setupWebsocket = (app, server) => {
             b: raidBoss.bossPrefabName,
             mH: raidBoss.maxHealth,
             h: raidBoss.health,
+            d: raidBoss.damage
           }),
         );
       }
@@ -103,15 +105,15 @@ const setupWebsocket = (app, server) => {
 
   // API Routes
   app.post("/notify/start-raid", (req, res) => {
-    const { bossPrefabName, maxHealth } = req.body;
-    if (!bossPrefabName || !maxHealth) {
+    const { bossPrefabName, maxHealth, damage } = req.body;
+    if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
     }
 
-    raidBoss.activate(bossPrefabName, maxHealth);
-    console.log(`Raid started: ${bossPrefabName} (${maxHealth})`);
+    raidBoss.activate(bossPrefabName, maxHealth, damage);
+    console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
 
-    broadcast(notifyClients, { e: "RS", b: bossPrefabName, mH: maxHealth });
+    broadcast(notifyClients, { e: "RS", b: bossPrefabName, mH: maxHealth, d: damage });
     return res.json({ success: true });
   });
 
