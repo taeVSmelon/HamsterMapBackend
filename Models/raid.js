@@ -8,7 +8,7 @@ class RaidBoss {
     this.bossPrefabName = bossPrefabName;
     this.maxHealth = maxHealth;
     this.health = maxHealth;
-    this.updateHealthChange = 0;
+    this.updateHealthChange = 100;
     this.playerJoins = new Set();
   }
 
