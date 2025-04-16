@@ -26,10 +26,10 @@ const scoreSchema = new mongoose.Schema({
 });
 
 const statSchema = new mongoose.Schema({
-  level :{ type: Number, default: 0 },
+  level :{ type: Number, default: 1 },
   maxExp : { type: Number, default: 0 },
   exp : { type: Number, default: 0 },
-  maxHealth : { type: Number, default: 0 },
+  maxHealth : { type: Number, default: 100 },
   // inventory : { type: [String], default: [] },
   // equipment : { type: [String], default: [] },
   clearedStages: { type: clearStage, default: {} },
