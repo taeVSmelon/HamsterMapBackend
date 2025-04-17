@@ -224,25 +224,24 @@ app.get("/leaderBoard/:game", async (req, res) => {
   }
 });
 
-app.post("/sendCode", async (req, res) => {
-  const token = req.header("Authorization");
-  const { stageId, code, startTime, endTime, itemUseds } = req.body;
+app.post("/sendCode", authenticateToken, async (req, res) => {
+  const { type, stageId, code, startTime, endTime, itemUseds, game } = req.body;
+  const username = req.username;
   try {
-    jwt.verify(token, process.env.JWT_TOKEN, async (err, user) => {
-      if (err) return res.status(401).json({ error: "Token expired" });
-      const username = user.username;
-      await userModel.findOneAndUpdate({ username },
-        { $push: { clearedStages: { type: "python", stageId, code, startTime, endTime, itemUseds } } },
-        { new: true }
-      )
-    });
+    await userModel.findOneAndUpdate({ username },
+      { $push: { [`stats.clearedStages.${game}`]: { type , stageId, code, startTime, endTime, itemUseds } } },
+      { new: true }
+    )
+    await userModel.findOneAndUpdate({ username },
+      { $inc: { [`score.${type}`]: 10 } },
+      { new: true }
+    )
   }
   catch (err) {
     return res.status(200).json({ error: err });
   }
+  res.send("Successfully");
 });
-
-
 
 setupWebsocket(app, server);
 

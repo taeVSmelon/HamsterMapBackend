@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const userModel = require("../Models/user.js");
 
-const JWT_SECRET = "HamsterXzaza007";
+const JWT_SECRET = process.env.JWT_TOKEN;
 
 const authenticateToken = (req, res, next) => {
   const accessToken = req.header("Authorization");
