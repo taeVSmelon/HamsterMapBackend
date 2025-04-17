@@ -12,12 +12,12 @@ class RaidBoss {
     this.rewardId = rewardId;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
-    this.playerJoins = new Set();
+    this.playerJoins = new Map();
   }
 
-  takeDamage(playerId, amount) {
+  takeDamage(ws, username, amount) {
     this.health = Math.max(0, this.health - amount);
-    this.playerJoins.add(playerId);
+    this.playerJoins.set(username, { ws, damage });
 
     const currentPercent = Math.floor((this.health / this.maxHealth) * 100) /
       100;
@@ -42,7 +42,7 @@ class RaidBoss {
     this.damage = 0;
     this.rewardId = null;
     this.updateHealthChange = 0;
-    this.playerJoins = new Set();
+    this.playerJoins = new Map();
   }
 }
 

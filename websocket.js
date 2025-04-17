@@ -1,5 +1,6 @@
 const RaidBoss = require("./Models/raid.js");
 const WebSocket = require("ws");
+const jwt = require("jsonwebtoken");
 
 const setupWebsocket = (app, server) => {
   const wss = new WebSocket.Server({ server });
@@ -9,103 +10,135 @@ const setupWebsocket = (app, server) => {
 
   // WebSocket client groups
   let notifyClients = new Set();
-  let raidClients = new Map(); // ws => playerId
+  let raidClients = new Map(); // ws => username
 
   function broadcast(clients, payload) {
     const message = JSON.stringify(payload);
     for (const ws of clients) {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
-        console.log("Message sent to", raidClients.get(ws), ":", message);
-      } else {
-        console.log("Client closed:", raidClients.get(ws));
       }
     }
   }
 
   wss.on("connection", (ws, req) => {
-    const { secret, event, id: userId } = req.headers;
+    const { secret, event, token } = req.headers;
 
     if (secret !== WEBHOOK_SECRET) {
       console.log("WebSocket Unauthorized closed..");
-      ws.close(1008, "Unauthorized");
-      return;
+      return ws.close(1008, "Unauthorized");
     }
 
     console.log(`New connection: ${event || "unknown"}`);
 
-    if (event === "raid" && userId) {
-      if (raidBoss.active) {
-        raidClients.set(ws, userId);
-        ws.send(
-          JSON.stringify({
-            e: "RS",
-            b: raidBoss.bossPrefabName,
-            mH: raidBoss.maxHealth,
-            h: raidBoss.health,
-            d: raidBoss.damage
-          }),
-        );
-      } else ws.close();
-    } else if (event === "notify") {
-      notifyClients.add(ws);
-      if (raidBoss.active) {
-        ws.send(
-          JSON.stringify({
-            e: "RS",
-            b: raidBoss.bossPrefabName,
-            mH: raidBoss.maxHealth,
-            h: raidBoss.health,
-            d: raidBoss.damage
-          }),
-        );
-      }
-    } else {
-      ws.close();
-      return;
-    }
+    jwt.verify(token, process.env.JWT_TOKEN, async (err, user) => {
+      if (err) return ws.close(1008, "Unauthorized");
+      const username = user.username;
 
-    ws.on("message", (message) => {
-      let data;
-      try {
-        data = JSON.parse(message);
-      } catch (err) {
-        console.error("Invalid message:", message);
+      if (event === "raid" && username) {
+        if (raidBoss.active) {
+          raidClients.set(ws, username);
+          ws.send(
+            JSON.stringify({
+              e: "RS",
+              b: raidBoss.bossPrefabName,
+              mH: raidBoss.maxHealth,
+              h: raidBoss.health,
+              d: raidBoss.damage,
+            }),
+          );
+        } else ws.close();
+      } else if (event === "notify") {
+        notifyClients.add(ws);
+        if (raidBoss.active) {
+          ws.send(
+            JSON.stringify({
+              e: "RS",
+              b: raidBoss.bossPrefabName,
+              mH: raidBoss.maxHealth,
+              h: raidBoss.health,
+              d: raidBoss.damage,
+            }),
+          );
+        }
+      } else {
+        ws.close();
         return;
       }
 
-      const { u: userId, s: signal, d: damage } = data;
-      if (!raidBoss.active || !userId || !signal) return;
+      ws.on("message", (message) => {
+        let data;
+        try {
+          data = JSON.parse(message);
+        } catch (err) {
+          console.error("Invalid message:", message);
+          return;
+        }
 
-      switch (signal) {
-        case "TD":
-          if (typeof damage !== "number" || damage <= 0) return;
+        const { u: username, s: signal, d: damage } = data;
+        if (!raidBoss.active || !username || !signal) return;
 
-          const updated = raidBoss.takeDamage(userId, damage);
-          console.log(
-            `${userId} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
-          );
+        switch (signal) {
+          case "TD":
+            if (typeof damage !== "number" || damage <= 0) return;
 
-          console.log(`updated: ${updated}`);
-          if (updated) {
-            broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
-          }
+            const updated = raidBoss.takeDamage(ws, username, damage);
+            console.log(
+              `${username} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
+            );
 
-          if (raidBoss.health <= 0) {
-            console.log(`Raid Ended. Players: ${raidBoss.playerJoins.size}`);
-            const rewardId = raidBoss.rewardId;
-            raidBoss.deactivate();
-            broadcast([...raidClients.keys()], { e: "RE", w: true, r: rewardId });
-          }
-          break;
-      }
-    });
-    
-    ws.on("close", () => {
-      if (notifyClients.has(ws))
-        notifyClients.delete(ws);
-      else if (raidClients.has(ws))
-        raidClients.delete(ws);
+            console.log(`updated: ${updated}`);
+            if (updated) {
+              broadcast(raidClients.keys(), { e: "UBH", h: raidBoss.health });
+            }
+
+            if (raidBoss.health <= 0) {
+              console.log(`Raid Ended. Players: ${raidBoss.playerJoins.size}`);
+              const bossMaxHealth = raidBoss.maxHealth;
+              const rewardId = raidBoss.rewardId;
+              const playerJoins = raidBoss.playerJoins;
+              raidBoss.deactivate();
+              const activeSockets = [...playerJoins]
+                .filter(([_, data]) => data.damage > 0)
+                .map(([_, data]) => data.ws);
+              const bestPlayer = [...playerJoins].reduce(
+                (best, [username, data]) => {
+                  if (!best || data.damage > best.damage) {
+                    return {
+                      username,
+                      damage: data.damage,
+                      damagePercent: data.damage / bossMaxHealth * 100,
+                    };
+                  }
+                  return best;
+                },
+                null,
+              );
+              broadcast(activeSockets, { e: "RE", w: true, r: rewardId });
+              broadcast(
+                Object.keys(raidClients).filter((item) =>
+                  !activeSockets.includes(item)
+                ),
+                { e: "RE", w: true },
+              );
+              broadcast(notifyClients, {
+                e: "RE",
+                w: true,
+                bu: bestPlayer.username,
+                bd: bestPlayer.damagePercent,
+              });
+            }
+            break;
+        }
+      });
+
+      ws.on("close", () => {
+        if (notifyClients.has(ws)) {
+          notifyClients.delete(ws);
+        } else if (raidClients.has(ws)) {
+          raidClients.delete(ws);
+        }
+      });
     });
   });
 
@@ -116,17 +149,28 @@ const setupWebsocket = (app, server) => {
       return res.status(400).json({ error: "Missing data" });
     }
 
-    raidBoss.activate(bossPrefabName, maxHealth, health ?? maxHealth, damage, rewardId);
+    raidBoss.activate(
+      bossPrefabName,
+      maxHealth,
+      health ?? maxHealth,
+      damage,
+      rewardId,
+    );
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
 
-    broadcast(notifyClients, { e: "RS", b: bossPrefabName, mH: maxHealth, d: damage });
+    broadcast(notifyClients, {
+      e: "RS",
+      b: bossPrefabName,
+      mH: maxHealth,
+      d: damage,
+    });
     return res.json({ success: true });
   });
 
   app.post("/notify/stop-raid", (req, res) => {
     raidBoss.deactivate();
     broadcast(notifyClients, { e: "RE", w: false });
-    broadcast([...raidClients.keys()], { e: "RE", w: false });
+    broadcast(raidClients.keys(), { e: "RE", w: false });
     return res.json({ success: true });
   });
 
