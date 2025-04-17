@@ -230,7 +230,7 @@ app.post("/sendCode", authenticateToken, async (req, res) => {
   const username = req.username;
   try {
     await userModel.findOneAndUpdate({ username },
-      { $push: { [`stats.clearedStages.${game}`]: { type , stageId, code, startTime, endTime, itemUseds } } },
+      { $push: { [`stats.clearedStages.${game}`]: { type, stageId, code, startTime, endTime, itemUseds } } },
       { new: true }
     )
     await userModel.findOneAndUpdate({ username },
@@ -250,6 +250,7 @@ app.get("/getStage/:game", authenticateToken, async (req, res) => {
   if (!data) return res.status(400).json({ message: "User not found" });
   const clearedStages = data.stats.clearedStages[game].map(stage => {
     return {
+      type: stage.type,
       stageId: stage.stageId,
       code: stage.code,
       itemUseds : stage.itemUseds
