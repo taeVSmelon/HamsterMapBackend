@@ -5,6 +5,7 @@ const userModel = require("./Models/user.js");
 const http = require('http');
 const querystring = require("querystring");
 const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
+const { authenticateToken, JWT_SECRET, checkIsJson } = require("./middlewares/AuthenticateToken.js");
 const jwt = require("jsonwebtoken");
 const app = express();
 const server = http.createServer(app);
@@ -38,7 +39,54 @@ app.post("/login", async (req, res) => {
   if (data.password !== pass) {
     return res.status(400).json({ message: "Incorrect password" });
   }
-  res.status(200).json({ message: "Login successful", username: data.username });
+
+  const refreshToken = jwt.sign({ username: data.username }, JWT_SECRET, {
+    expiresIn: "30d",
+  });
+  const accessToken = jwt.sign(
+    { username: data.username, refreshToken: refreshToken },
+    JWT_SECRET,
+    { expiresIn: "1h" },
+  );
+
+  await userModel.updateOne(
+    { username: data.username },
+    { $set: { refreshToken: refreshToken } }
+  );
+
+  res.status(200).json({
+    message: "Login successful", 
+    refreshToken: refreshToken,
+    accessToken: accessToken
+  });
+});
+
+app.post("/refreshToken", async (req, res) => {
+  const refreshToken = req.header("Authorization");
+
+  if (!refreshToken) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+
+  jwt.verify(refreshToken, JWT_SECRET, async (err, user) => {
+    if (err) return res.status(403).json({ error: "Token expired" });
+    const nowUser = await userModel.findOne({ username: user.username });
+    if (!nowUser) return res.status(404).json({ error: "User not found" });
+
+    if (nowUser.refreshToken === refreshToken) {
+      const accessToken = jwt.sign(
+        { username: nowUser.username, refreshToken: refreshToken },
+        JWT_SECRET,
+        { expiresIn: "1h" },
+      );
+
+      return res.json({
+        accessToken: accessToken,
+      });
+    } else {
+      return res.status(403).json({ error: "Token expired" });
+    }
+  });
 });
 
 app.get("/loginDiscord", async (req, res) => {
@@ -127,6 +175,12 @@ app.get("/authorizeDiscord", async (req, res) => {
   }
   res.status(200).json(stateCache[state]);
   return delete stateCache[state];
+});
+
+app.get("/getProfile", authenticateToken, async (req, res) => {
+  const data = await userModel.findOne({ username: req.username });
+  if (!data) return res.status(400).json({ message: "User not found" });
+  res.status(200).json(data);
 });
 
 app.get("/getUser/:username", async (req, res) => {

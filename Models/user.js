@@ -43,7 +43,8 @@ const dataSchema = new mongoose.Schema({
   discord_id : {type : String, default : ""},
   friend: { type: [String] , default: []},
   stats: {type: statSchema, default: {} },
-  score : { type: scoreSchema, default: 0 }
+  score : { type: scoreSchema, default: 0 },
+  refreshToken: { type: String, default: null }
 });
 
 const dataModel = mongoose.model("UserData", dataSchema, "UserData");
