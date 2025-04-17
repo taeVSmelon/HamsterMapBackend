@@ -1,6 +1,5 @@
 const RaidBoss = require("./Models/raid.js");
 const WebSocket = require("ws");
-const url = require("url");
 
 const setupWebsocket = (app, server) => {
   const wss = new WebSocket.Server({ server });
@@ -28,6 +27,7 @@ const setupWebsocket = (app, server) => {
     const { secret, event, id: userId } = req.headers;
 
     if (secret !== WEBHOOK_SECRET) {
+      console.log("WebSocket Unauthorized closed..");
       ws.close(1008, "Unauthorized");
       return;
     }
@@ -86,11 +86,10 @@ const setupWebsocket = (app, server) => {
             `${userId} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
           );
 
-          // console.log(`updated: ${updated}`);
-          // if (updated) {
-          //   broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
-          // }
-          broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
+          console.log(`updated: ${updated}`);
+          if (updated) {
+            broadcast([...raidClients.keys()], { e: "UBH", h: raidBoss.health });
+          }
 
           if (raidBoss.health <= 0) {
             console.log(`Raid Ended. Players: ${raidBoss.playerJoins.size}`);
@@ -111,12 +110,12 @@ const setupWebsocket = (app, server) => {
 
   // API Routes
   app.post("/notify/start-raid", (req, res) => {
-    const { bossPrefabName, maxHealth, damage } = req.body;
+    const { bossPrefabName, maxHealth, health, damage } = req.body;
     if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
     }
 
-    raidBoss.activate(bossPrefabName, maxHealth, damage);
+    raidBoss.activate(bossPrefabName, maxHealth, health ?? maxHealth, damage);
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
 
     broadcast(notifyClients, { e: "RS", b: bossPrefabName, mH: maxHealth, d: damage });

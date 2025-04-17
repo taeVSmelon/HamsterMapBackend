@@ -3,11 +3,11 @@ class RaidBoss {
     this.reset();
   }
 
-  activate(bossPrefabName, maxHealth, damage) {
+  activate(bossPrefabName, maxHealth, health, damage) {
     this.active = true;
     this.bossPrefabName = bossPrefabName;
     this.maxHealth = maxHealth;
-    this.health = maxHealth;
+    this.health = health;
     this.damage = damage;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
