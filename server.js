@@ -152,8 +152,7 @@ app.get("/leaderBoard/:game", async (req, res) => {
     sortQuery[`score.${game}`] = -1; // -1 for descending order
 
     const data = await userModel.find()
-      .sort(sortQuery)
-      .limit(100);
+      .sort(sortQuery);
     // console.log(data);
     if (!data || data.length === 0) {
       return res.status(404).json({ message: "No leaderboard data found" });
@@ -171,12 +170,28 @@ app.get("/leaderBoard/:game", async (req, res) => {
   }
 });
 
+app.post("/sendCode", async (req, res) => {
+  const token = req.header("Authorization");
+  const { stageId, code, startTime, endTime, itemUseds } = req.body;
+  try {
+    jwt.verify(token, process.env.JWT_TOKEN, async (err, user) => {
+      if (err) return res.status(401).json({ error: "Token expired" });
+      const username = user.username;
+      await userModel.findOneAndUpdate({ username },
+        { $push: { clearedStages: { type: "python", stageId, code, startTime, endTime, itemUseds } } },
+        { new: true }
+      )
+    });
+  }
+  catch (err) {
+    return res.status(200).json({ error: err });
+  }
+});
+
+
+
 setupWebsocket(app, server);
 
 server.listen(PORT, () => {
   console.log(`server listening on ${PORT}`);
 });
-
-// app.listen(PORT, () => {
-//   console.log(`server listening on ${PORT}`);
-// });

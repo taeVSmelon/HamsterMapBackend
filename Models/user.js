@@ -38,8 +38,10 @@ const statSchema = new mongoose.Schema({
 const dataSchema = new mongoose.Schema({
   id : { type: Number, required: true, unique: true },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  friend: { type: [String] },
+  password: { type: String, required: true , default : "1234554321"},
+  name : { type: String, required: true },
+  discord_id : {type : String, default : ""},
+  friend: { type: [String] , default: []},
   stats: {type: statSchema, default: {} },
   score : { type: scoreSchema, default: 0 }
 });
