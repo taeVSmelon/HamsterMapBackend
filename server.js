@@ -148,7 +148,7 @@ app.get("/loginDiscord", async (req, res) => {
       username: user.username,
       accessToken: access_token,
       refreshToken: refresh_token,
-    }, process.env.JWT_SECRET,
+    }, JWT_SECRET,
       {
         expiresIn: "10h" // มาปรับได้
       });
