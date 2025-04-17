@@ -16,6 +16,7 @@ connectDB();
 
 app.use(express.json());
 app.set('trust proxy', true);
+app.set("view engine", "ejs");
 
 app.use((req, res, next) => {
   const currentTime = new Date().toISOString();
@@ -214,7 +215,7 @@ app.get("/leaderBoard/:game", async (req, res) => {
     var leaderboard = data.map((player) => {
       return {
         id: player.id,
-        username: player.username,
+        username: player.name,
         score: player.score[game]
       };
     });
@@ -256,6 +257,25 @@ app.get("/getStage/:game", authenticateToken, async (req, res) => {
   })
   res.status(200).json(clearedStages);
 })
+
+app.get("/backoffice", async (req, res) => {
+  res.render("backoffice");
+});
+
+app.post("/addScore", async (req, res) =>{
+  const { username, game, score } = req.body;
+  try {
+    await userModel.findOneAndUpdate({ username },
+      { $inc: { [`score.${game}`]: score } },
+      { new: true }
+    )
+  }
+  catch (err) {
+    return res.status(200).json({ error: err });
+  }
+  res.json({ message: "Successfully" });
+})
+
 setupWebsocket(app, server);
 
 server.listen(PORT, () => {
