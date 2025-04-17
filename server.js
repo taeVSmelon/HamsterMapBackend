@@ -239,6 +239,7 @@ app.post("/sendCode", authenticateToken, async (req, res) => {
     )
   }
   catch (err) {
+    console.log(err);
     return res.status(200).json({ error: err });
   }
   res.send("Successfully");

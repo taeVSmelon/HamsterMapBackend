@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 //const 
 const stageSchema = new mongoose.Schema({
     type: { type: String, required: true },
-    stageId: { type: Number, required: true },
+    // stageId: { type: Number, required: true },
+    stageId: { type: String, required: true },
     rewardId: { type: Number, required: true },
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
