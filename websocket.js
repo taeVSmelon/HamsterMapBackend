@@ -83,12 +83,11 @@ const setupWebsocket = (app, server) => {
             if (typeof damage !== "number" || damage <= 0) return;
 
             const updated = raidBoss.takeDamage(ws, username, damage);
-            console.log(
-              `${username} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
-            );
 
-            console.log(`updated: ${updated}`);
             if (updated) {
+              console.log(
+                `${username} dealt ${damage} damage. Boss HP: ${raidBoss.health}`,
+              );
               broadcast(raidClients.keys(), { e: "UBH", h: raidBoss.health });
             }
 
@@ -149,6 +148,10 @@ const setupWebsocket = (app, server) => {
       return res.status(400).json({ error: "Missing data" });
     }
 
+    if (raidBoss.active) {
+      return res.status(400).json({ error: "Raid is active" });
+    }
+
     raidBoss.activate(
       bossPrefabName,
       maxHealth,
@@ -156,6 +159,7 @@ const setupWebsocket = (app, server) => {
       damage,
       rewardId,
     );
+    
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
 
     broadcast(notifyClients, {
