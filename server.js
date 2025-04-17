@@ -243,6 +243,19 @@ app.post("/sendCode", authenticateToken, async (req, res) => {
   res.send("Successfully");
 });
 
+app.get("/getStage/:game", authenticateToken, async (req, res) => {
+  const game = req.params.game;
+  const data = await userModel.findOne({ username: req.username });
+  if (!data) return res.status(400).json({ message: "User not found" });
+  const clearedStages = data.stats.clearedStages[game].map(stage => {
+    return {
+      stageId: stage.stageId,
+      code: stage.code,
+      itemUseds : stage.itemUseds
+    }
+  })
+  res.status(200).json(clearedStages);
+})
 setupWebsocket(app, server);
 
 server.listen(PORT, () => {
