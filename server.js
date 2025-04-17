@@ -55,14 +55,10 @@ app.post("/login", async (req, res) => {
     { $set: { refreshToken: refreshToken } }
   );
 
-  const tokenExpiredDate = new Date();
-  tokenExpiredDate.setHours(tokenExpiredDate.getHours() + 1);
-
   res.status(200).json({
     message: "Login successful", 
     refreshToken: refreshToken,
-    accessToken: accessToken,
-    tokenExpiredDate: tokenExpiredDate.getUTCSeconds()
+    accessToken: accessToken
   });
 });
 
