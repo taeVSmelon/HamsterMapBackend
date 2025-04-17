@@ -215,7 +215,7 @@ app.get("/leaderBoard/:game", async (req, res) => {
     var leaderboard = data.map((player) => {
       return {
         id: player.id,
-        username: player.username,
+        username: player.name,
         score: player.score[game]
       };
     });
