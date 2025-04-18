@@ -50,6 +50,12 @@ app.post("/login", async (req, res) => {
     { expiresIn: "1h" },
   );
 
+  const refreshTokenExpiredTime = new Date();
+  refreshTokenExpiredTime.setDate(refreshTokenExpiredTime.getDate() + 1);
+
+  const accessTokenExpiredTime = new Date();
+  accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
+
   await userModel.updateOne(
     { username: data.username },
     { $set: { refreshToken: refreshToken } }
@@ -58,7 +64,9 @@ app.post("/login", async (req, res) => {
   res.status(200).json({
     message: "Login successful", 
     refreshToken: refreshToken,
-    accessToken: accessToken
+    accessToken: accessToken,
+    refreshTokenExpiredTime: refreshTokenExpiredTime.getUTCSeconds(),
+    accessTokenExpiredTime: accessTokenExpiredTime.getUTCSeconds()
   });
 });
 
