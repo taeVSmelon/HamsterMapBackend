@@ -58,10 +58,10 @@ app.post("/login", async (req, res) => {
   const accessTokenExpiredTime = new Date();
   accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
 
-  const refreshTokenTimestamp = Math.floor(
+  const refreshTokenExpired = Math.floor(
     refreshTokenExpiredTime.getTime() / 1000,
   );
-  const accessTokenTimestamp = Math.floor(
+  const accessTokenExpired = Math.floor(
     accessTokenExpiredTime.getTime() / 1000,
   );
 
@@ -74,8 +74,8 @@ app.post("/login", async (req, res) => {
     message: "Login successful",
     refreshToken,
     accessToken,
-    refreshTokenTimestamp,
-    accessTokenTimestamp,
+    refreshTokenExpired,
+    accessTokenExpired,
   });
 });
 
@@ -98,8 +98,16 @@ app.post("/refreshToken", async (req, res) => {
         { expiresIn: "1h" },
       );
 
+      const accessTokenExpiredTime = new Date();
+      accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
+    
+      const accessTokenExpired = Math.floor(
+        accessTokenExpiredTime.getTime() / 1000,
+      );
+
       return res.json({
-        accessToken: accessToken,
+        accessToken,
+        accessTokenExpired
       });
     } else {
       return res.status(403).json({ error: "Token expired" });
