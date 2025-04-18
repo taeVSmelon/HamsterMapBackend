@@ -98,7 +98,7 @@
         
         .game-list-header {
             display: grid;
-            grid-template-columns: 50px 3fr 120px;
+            grid-template-columns: 50px 2fr 1fr 120px;
             padding: 15px;
             background-color: #f8f9fa;
             font-weight: bold;
@@ -107,7 +107,7 @@
         
         .game-item {
             display: grid;
-            grid-template-columns: 50px 3fr 120px;
+            grid-template-columns: 50px 2fr 1fr 120px;
             padding: 15px;
             border-bottom: 1px solid #e9ecef;
             align-items: center;
@@ -165,6 +165,10 @@
         }
     </style>
 </head>
+<% const games = {python: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1200px-Python-logo-notext.svg.png",
+ unity: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMEpvhQOuCkjQFYaax3e8BMa9yk4Y6xt_HUQ&s",
+  blender: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5iU8JDs-L1cYtWNuqQUSVDTi8upS3exaTzA&s",
+   website: "https://cdn-icons-png.flaticon.com/512/5339/5339181.png"}; %>
 <body>
     <div class="sidebar">
         <div class="logo">
@@ -190,18 +194,22 @@
         <div class="game-list">
             <div class="game-list-header">
                 <div></div>
-                <div>Game Title</div>
+                <div>Name</div>
+                <div>Stage Number</div>
                 <div>Actions</div>
             </div>
             
-            <div class="game-item">
-                <img src="/api/placeholder/40/40" alt="Game 1">
-                <div>Cosmic Adventure</div>
-                <div>
-                    <button class="approve-btn">Approve</button>
-                    <button class="reject-btn">Reject</button>
+            <% data.forEach(item => { %>
+                <div class="game-item">
+                    <img src="<%= games[item.game] %>" alt="Game 1">
+                    <div> <%= item.name %> </div>
+                    <div> <%= item.stageId %> </div>
+                    <div>
+                        <button class="approve-btn" onclick="approve('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>', '<%= item.code %>')">Approve</button>
+                        <button class="reject-btn" onclick="reject('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>', '<%= item.code %>')">Reject</button>
+                    </div>
                 </div>
-            </div>
+            <% }) %>
         </div>
     </div>
 
@@ -219,12 +227,24 @@
             
         });
 
-        function approve() {
-
+        async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
+            await fetch("./approved", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code }),
+            });
         }
-        
-        function reject() {
 
+        function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
+            fetch("./rejected", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username}),
+            });
         }
     </script>
 </body>

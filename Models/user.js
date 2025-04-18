@@ -36,7 +36,7 @@ const statSchema = new mongoose.Schema({
 });
 
 const dataSchema = new mongoose.Schema({
-  id : { type: Number, unique: true , autoIncrement: true },
+  id : { type: Number, unique: true , autoIncrement: true, default: () => Math.floor(new Date().getTime()/10000000) },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true , default : "1234554321"},
   name : { type: String, required: true },
