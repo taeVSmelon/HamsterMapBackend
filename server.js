@@ -52,9 +52,12 @@ app.post("/login", async (req, res) => {
 
   const refreshTokenExpiredTime = new Date();
   refreshTokenExpiredTime.setDate(refreshTokenExpiredTime.getDate() + 1);
-
+  
   const accessTokenExpiredTime = new Date();
   accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
+  
+const refreshTokenTimestamp = Math.floor(refreshTokenExpiredTime.getTime() / 1000);
+const accessTokenTimestamp = Math.floor(accessTokenExpiredTime.getTime() / 1000);
 
   await userModel.updateOne(
     { username: data.username },
@@ -63,10 +66,10 @@ app.post("/login", async (req, res) => {
 
   res.status(200).json({
     message: "Login successful", 
-    refreshToken: refreshToken,
-    accessToken: accessToken,
-    refreshTokenExpiredTime: refreshTokenExpiredTime.getUTCSeconds(),
-    accessTokenExpiredTime: accessTokenExpiredTime.getUTCSeconds()
+    refreshToken,
+    accessToken,
+    refreshTokenTimestamp,
+    accessTokenTimestamp
   });
 });
 
