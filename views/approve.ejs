@@ -188,7 +188,7 @@
             <h1> Approval Dashboard </h1>
             <div class="search-bar">
                 <input type="text" placeholder="Search Name...">
-                <button>Search</button>
+                <button onclick="joke()">Search</button>
             </div>
         </div>
         
@@ -207,7 +207,7 @@
                     <div> <%= item.stageId %> </div>
                     <div>
                         <button class="approve-btn" onclick="approve('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>', '<%= item.code %>')">Approve</button>
-                        <button class="reject-btn" onclick="reject('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>', '<%= item.code %>')">Reject</button>
+                        <button class="reject-btn" onclick="joke()">Reject</button>
                     </div>
                 </div>
             <% }) %>
@@ -256,7 +256,9 @@
             });
             location.reload();
         }
-    
+        function joke(){
+            alert("ไม่ได้ทำครับ");
+        }
         function filter(game) {
             // Using data attributes to filter
             const allItems = document.querySelectorAll('.game-item');

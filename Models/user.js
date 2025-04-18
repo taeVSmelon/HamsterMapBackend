@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 //const 
 const stageSchema = new mongoose.Schema({
     type: { type: String, required: true },
@@ -36,7 +36,7 @@ const statSchema = new mongoose.Schema({
 });
 
 const dataSchema = new mongoose.Schema({
-  id : { type: Number, unique: true , autoIncrement: true, default: () => Math.floor(new Date().getTime()/10000000) },
+  id : { type: Number, unique: true},
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true , default : "1234554321"},
   name : { type: String, required: true },
@@ -47,6 +47,7 @@ const dataSchema = new mongoose.Schema({
   refreshToken: { type: String, default: null }
 });
 
+dataSchema.plugin(AutoIncrement, { inc_field: 'id', start_seq: 1000 });
 const dataModel = mongoose.model("UserData", dataSchema, "UserData");
 
 module.exports = dataModel;
