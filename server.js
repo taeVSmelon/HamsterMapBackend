@@ -393,9 +393,15 @@ app.post("/approved", async (req, res) => {
 });
 
 app.post("/rejected", async (req, res) => {
-  const { username} = req.body;
+  const { username, stageId } = req.body;
   try {
-    await approveModel.findOneAndDelete({ username });
+    await approveModel.findOneAndDelete({ username, stageId });
+    const ws = getWebSocketWithUsername(username);
+    if (ws != null && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        e: "LS"
+      }));
+    }
   } catch (err) {
     return res.status(200).json({ error: err });
   }
