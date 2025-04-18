@@ -312,6 +312,14 @@ app.post("/addScore", async (req, res) => {
     await userModel.findOneAndUpdate({ username }, {
       $inc: { [`score.${game}`]: score },
     }, { new: true });
+    const ws = getWebSocketWithUsername(username);
+    if (ws != null && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        e: "N",
+        m: `Your ${game} score added ${score} points`,
+        c: "#FFC90E"
+      }));
+    }
   } catch (err) {
     return res.status(200).json({ error: err });
   }
