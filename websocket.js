@@ -2,6 +2,8 @@ const RaidBoss = require("./Models/raid.js");
 const WebSocket = require("ws");
 const jwt = require("jsonwebtoken");
 
+const usernameToWs = new Map();
+
 const setupWebsocket = (app, server) => {
   const wss = new WebSocket.Server({ server });
   const WEBHOOK_SECRET = "hamsterHub";
@@ -37,6 +39,7 @@ const setupWebsocket = (app, server) => {
 
       if (event === "raid" && username) {
         if (raidBoss.active) {
+          usernameToWs.set(username, ws);
           raidClients.set(ws, username);
           ws.send(
             JSON.stringify({
@@ -49,6 +52,7 @@ const setupWebsocket = (app, server) => {
           );
         } else ws.close();
       } else if (event === "notify") {
+        usernameToWs.set(username, ws);
         notifyClients.add(ws);
         if (raidBoss.active) {
           ws.send(
@@ -191,4 +195,8 @@ const setupWebsocket = (app, server) => {
   });
 };
 
-module.exports = setupWebsocket;
+function getWebSocketWithUsername(username) {
+  return usernameToWs.get(username);
+}
+
+module.exports = { setupWebsocket, getWebSocketWithUsername };

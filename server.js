@@ -5,7 +5,7 @@ const userModel = require("./Models/user.js");
 const approveModel = require("./Models/approve.js");
 const http = require("http");
 const querystring = require("querystring");
-const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
+const { setupWebsocket, getWebSocketWithUsername } = require("./websocket.js"); // 👈 ใช้ server จาก websocket
 const { authenticateToken, JWT_SECRET, checkIsJson } = require(
   "./middlewares/AuthenticateToken.js",
 );
@@ -371,10 +371,17 @@ app.post("/approved", async (req, res) => {
       $inc: { [`score.${game}`]: 20 },
     }, { new: true });
     await approveModel.findOneAndDelete({ username });
+    const ws = getWebSocketWithUsername(username);
+    if (ws != null && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        e: "LS"
+      }));
+    }
   } catch (err) {
+    console.error("Error in /approved:", err);
     return res.status(200).json({ error: err });
   }
-  res.json({ message: "Successfully" });
+  return res.json({ message: "Successfully" });
 });
 
 app.post("/rejected", async (req, res) => {
