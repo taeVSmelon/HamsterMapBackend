@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Approval System</title>
+    <title>Approval System</title>
+    <meta http-equiv="refresh" content="60">
     <style>
         * {
             margin: 0;
@@ -175,10 +176,10 @@
             <h2> Game Section </h2>
         </div>
         <ul class="menu">
-            <li class="menu-item active">python</li>
-            <li class="menu-item">unity</li>
-            <li class="menu-item">blender</li>
-            <li class="menu-item">website</li>
+            <li class="menu-item active" onclick="filter('python')">python</li>
+            <li class="menu-item" onclick="filter('unity')">unity</li>
+            <li class="menu-item" onclick="filter('blender')">blender</li>
+            <li class="menu-item" onclick="filter('website')">website</li>
         </ul>
     </div>
     
@@ -200,7 +201,7 @@
             </div>
             
             <% data.forEach(item => { %>
-                <div class="game-item">
+                <div class="game-item" data-game="<%= item.game %>">
                     <img src="<%= games[item.game] %>" alt="Game 1">
                     <div> <%= item.name %> </div>
                     <div> <%= item.stageId %> </div>
@@ -214,6 +215,14 @@
     </div>
 
     <script>
+        // Pass the games object from EJS to JavaScript
+        const gameImages = {
+            python: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1200px-Python-logo-notext.svg.png",
+            unity: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMEpvhQOuCkjQFYaax3e8BMa9yk4Y6xt_HUQ&s",
+            blender: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5iU8JDs-L1cYtWNuqQUSVDTi8upS3exaTzA&s",
+            website: "https://cdn-icons-png.flaticon.com/512/5339/5339181.png"
+        };
+        
         // Simple JavaScript for demonstration
         document.addEventListener('DOMContentLoaded', function() {
             // Menu item click
@@ -224,7 +233,6 @@
                     this.classList.add('active');
                 });
             });
-            
         });
 
         async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
@@ -235,6 +243,7 @@
                 },
                 body: JSON.stringify({ username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code }),
             });
+            location.reload();
         }
 
         function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
@@ -243,7 +252,20 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ username}),
+                body: JSON.stringify({ username }),
+            });
+            location.reload();
+        }
+    
+        function filter(game) {
+            // Using data attributes to filter
+            const allItems = document.querySelectorAll('.game-item');
+            allItems.forEach(item => {
+                if (item.getAttribute('data-game') === game) {
+                    item.style.display = 'grid';
+                } else {
+                    item.style.display = 'none';
+                }
             });
         }
     </script>
