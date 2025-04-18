@@ -2,10 +2,12 @@ const express = require("express");
 const axios = require("axios");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
-const http = require('http');
+const http = require("http");
 const querystring = require("querystring");
 const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
-const { authenticateToken, JWT_SECRET, checkIsJson } = require("./middlewares/AuthenticateToken.js");
+const { authenticateToken, JWT_SECRET, checkIsJson } = require(
+  "./middlewares/AuthenticateToken.js",
+);
 const jwt = require("jsonwebtoken");
 const app = express();
 const server = http.createServer(app);
@@ -15,7 +17,7 @@ const stateCache = {};
 connectDB();
 
 app.use(express.json());
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 app.set("view engine", "ejs");
 
 app.use((req, res, next) => {
@@ -52,24 +54,28 @@ app.post("/login", async (req, res) => {
 
   const refreshTokenExpiredTime = new Date();
   refreshTokenExpiredTime.setDate(refreshTokenExpiredTime.getDate() + 1);
-  
+
   const accessTokenExpiredTime = new Date();
   accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
-  
-const refreshTokenTimestamp = Math.floor(refreshTokenExpiredTime.getTime() / 1000);
-const accessTokenTimestamp = Math.floor(accessTokenExpiredTime.getTime() / 1000);
+
+  const refreshTokenTimestamp = Math.floor(
+    refreshTokenExpiredTime.getTime() / 1000,
+  );
+  const accessTokenTimestamp = Math.floor(
+    accessTokenExpiredTime.getTime() / 1000,
+  );
 
   await userModel.updateOne(
     { username: data.username },
-    { $set: { refreshToken: refreshToken } }
+    { $set: { refreshToken: refreshToken } },
   );
 
   res.status(200).json({
-    message: "Login successful", 
+    message: "Login successful",
     refreshToken,
     accessToken,
     refreshTokenTimestamp,
-    accessTokenTimestamp
+    accessTokenTimestamp,
   });
 });
 
@@ -156,14 +162,17 @@ app.get("/loginDiscord", async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
-    const token = jwt.sign({
-      username: user.username,
-      accessToken: access_token,
-      refreshToken: refresh_token,
-    }, JWT_SECRET,
+    const token = jwt.sign(
       {
-        expiresIn: "10h" // มาปรับได้
-      });
+        username: user.username,
+        accessToken: access_token,
+        refreshToken: refresh_token,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: "10h", // มาปรับได้
+      },
+    );
     stateCache[state] = token;
 
     return res.status(200).send("Login successful");
@@ -206,10 +215,11 @@ app.get("/leaderBoard/:game", async (req, res) => {
   const game = req.params.game;
 
   // Validate game parameter
-  const validGames = ['python', 'unity', 'blender', 'website'];
+  const validGames = ["python", "unity", "blender", "website"];
   if (!validGames.includes(game)) {
     return res.status(400).json({
-      message: "Invalid game type. Must be one of: python, unity, blender, website"
+      message:
+        "Invalid game type. Must be one of: python, unity, blender, website",
     });
   }
 
@@ -227,7 +237,7 @@ app.get("/leaderBoard/:game", async (req, res) => {
       return {
         id: player.id,
         username: player.name,
-        score: player.score[game]
+        score: player.score[game],
       };
     });
     res.status(200).json(leaderboard);
@@ -240,16 +250,22 @@ app.post("/sendCode", authenticateToken, async (req, res) => {
   const { type, stageId, code, startTime, endTime, itemUseds, game } = req.body;
   const username = req.username;
   try {
-    await userModel.findOneAndUpdate({ username },
-      { $push: { [`stats.clearedStages.${game}`]: { type, stageId, code, startTime, endTime, itemUseds } } },
-      { new: true }
-    )
-    await userModel.findOneAndUpdate({ username },
-      { $inc: { [`score.${type}`]: 10 } },
-      { new: true }
-    )
-  }
-  catch (err) {
+    await userModel.findOneAndUpdate({ username }, {
+      $push: {
+        [`stats.clearedStages.${game}`]: {
+          type,
+          stageId,
+          code,
+          startTime,
+          endTime,
+          itemUseds,
+        },
+      },
+    }, { new: true });
+    await userModel.findOneAndUpdate({ username }, {
+      $inc: { [`score.${type}`]: 10 },
+    }, { new: true });
+  } catch (err) {
     console.log(err);
     return res.status(200).json({ error: err });
   }
@@ -260,34 +276,32 @@ app.get("/getStage/:game", authenticateToken, async (req, res) => {
   const game = req.params.game;
   const data = await userModel.findOne({ username: req.username });
   if (!data) return res.status(400).json({ message: "User not found" });
-  const clearedStages = data.stats.clearedStages[game].map(stage => {
+  const clearedStages = data.stats.clearedStages[game].map((stage) => {
     return {
       type: stage.type,
       stageId: stage.stageId,
       code: stage.code,
-      itemUseds : stage.itemUseds
-    }
-  })
+      itemUseds: stage.itemUseds,
+    };
+  });
   res.status(200).json(clearedStages);
-})
+});
 
 app.get("/backoffice", async (req, res) => {
   res.render("backoffice");
 });
 
-app.post("/addScore", async (req, res) =>{
+app.post("/addScore", async (req, res) => {
   const { username, game, score } = req.body;
   try {
-    await userModel.findOneAndUpdate({ username },
-      { $inc: { [`score.${game}`]: score } },
-      { new: true }
-    )
-  }
-  catch (err) {
+    await userModel.findOneAndUpdate({ username }, {
+      $inc: { [`score.${game}`]: score },
+    }, { new: true });
+  } catch (err) {
     return res.status(200).json({ error: err });
   }
   res.json({ message: "Successfully" });
-})
+});
 
 setupWebsocket(app, server);
 
