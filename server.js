@@ -319,6 +319,9 @@ app.post("/addScore", async (req, res) => {
         m: `Your ${game} score added ${score} points`,
         c: "#FFC90E"
       }));
+      ws.send(JSON.stringify({
+        e: "LS"
+      }));
     }
   } catch (err) {
     return res.status(200).json({ error: err });
