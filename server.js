@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
+const approveModel = require("./Models/approve.js");
 const http = require("http");
 const querystring = require("querystring");
 const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
@@ -300,7 +301,8 @@ app.get("/backoffice", async (req, res) => {
 });
 
 app.get("/test", async (req, res) => {
-  res.render("test");
+  const data = await approveModel.find();
+  res.render("test", { data });
 });
 
 app.post("/addScore", async (req, res) => {
@@ -324,6 +326,61 @@ app.post("/generateId", async (req, res) => {
       password
     });
     await user.save();
+  } catch (err) {
+    return res.status(200).json({ error: err });
+  }
+  res.json({ message: "Successfully" });
+});
+
+app.post("/sendApprove", async (req, res) => {
+  const { username, name, game, type, stageId, rewardId, startTime, endTime, itemUseds, code } = req.body;
+  try {
+    await approveModel.create({
+      username,
+      name,
+      game,
+      type,
+      stageId,
+      rewardId,
+      startTime,
+      endTime,
+      itemUseds,
+      code
+    });
+  } catch (err) {
+    return res.status(200).json({ error: err });
+  }
+  res.json({ message: "Successfully" });
+});
+
+app.post("/approved", async (req, res) => {
+  const { username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code } = req.body;
+  try {
+    await userModel.findOneAndUpdate({ username }, {
+      $push: {
+        [`stats.clearedStages.${game}`]: {
+          type,
+          stageId,
+          rewardId,
+          code,
+          startTime,
+          endTime,
+          itemUseds,
+        },
+      },
+      $inc: { [`score.${game}`]: 20 },
+    }, { new: true });
+    await approveModel.findOneAndDelete({ username });
+  } catch (err) {
+    return res.status(200).json({ error: err });
+  }
+  res.json({ message: "Successfully" });
+});
+
+app.post("/rejected", async (req, res) => {
+  const { username} = req.body;
+  try {
+    await approveModel.findOneAndDelete({ username });
   } catch (err) {
     return res.status(200).json({ error: err });
   }
