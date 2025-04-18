@@ -15,8 +15,8 @@ class RaidBoss {
     this.playerJoins = new Map();
   }
 
-  takeDamage(ws, username, amount) {
-    this.health = Math.max(0, this.health - amount);
+  takeDamage(ws, username, damage) {
+    this.health = Math.max(0, this.health - damage);
     this.playerJoins.set(username, { ws, damage });
 
     const currentPercent = Math.floor((this.health / this.maxHealth) * 100) /
