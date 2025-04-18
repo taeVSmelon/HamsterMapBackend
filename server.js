@@ -363,7 +363,7 @@ app.post("/sendApprove", async (req, res) => {
 });
 
 app.post("/approved", async (req, res) => {
-  const { username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code } = req.body;
+  const { username, game, type, stageId, startTime, endTime, itemUseds, code } = req.body;
   try {
     await userModel.findOneAndUpdate({ username }, {
       $push: {
@@ -378,7 +378,7 @@ app.post("/approved", async (req, res) => {
       },
       $inc: { [`score.${game}`]: 20 },
     }, { new: true });
-    await approveModel.findOneAndDelete({ username });
+    await approveModel.findOneAndDelete({ username, stageId });
     const ws = getWebSocketWithUsername(username);
     if (ws != null && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
@@ -393,9 +393,15 @@ app.post("/approved", async (req, res) => {
 });
 
 app.post("/rejected", async (req, res) => {
-  const { username} = req.body;
+  const { username, stageId } = req.body;
   try {
-    await approveModel.findOneAndDelete({ username });
+    await approveModel.findOneAndDelete({ username, stageId });
+    const ws = getWebSocketWithUsername(username);
+    if (ws != null && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        e: "LS"
+      }));
+    }
   } catch (err) {
     return res.status(200).json({ error: err });
   }
