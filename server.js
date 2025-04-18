@@ -342,7 +342,7 @@ app.post("/generateId", async (req, res) => {
 });
 
 app.post("/sendApprove", async (req, res) => {
-  const { username, name, game, type, stageId, rewardId, startTime, endTime, itemUseds, code } = req.body;
+  const { username, name, game, type, stageId, startTime, endTime, itemUseds, code } = req.body;
   try {
     await approveModel.create({
       username,
@@ -350,13 +350,13 @@ app.post("/sendApprove", async (req, res) => {
       game,
       type,
       stageId,
-      rewardId,
       startTime,
       endTime,
       itemUseds,
       code
     });
   } catch (err) {
+    console.log(err);
     return res.status(200).json({ error: err });
   }
   res.json({ message: "Successfully" });
@@ -370,7 +370,6 @@ app.post("/approved", async (req, res) => {
         [`stats.clearedStages.${game}`]: {
           type,
           stageId,
-          rewardId,
           code,
           startTime,
           endTime,

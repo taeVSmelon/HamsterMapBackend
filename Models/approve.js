@@ -6,7 +6,7 @@ const dataSchema = new mongoose.Schema({
     game : { type: String, required: true},
     type: { type: String, required: true },
     stageId: { type: String, required: true },
-    rewardId: { type: Number, required: true },
+    // rewardId: { type: String, required: true },
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
     itemUseds: { type: [String], default: [] },
