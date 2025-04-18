@@ -299,12 +299,31 @@ app.get("/backoffice", async (req, res) => {
   res.render("backoffice");
 });
 
+app.get("/test", async (req, res) => {
+  res.render("test");
+});
+
 app.post("/addScore", async (req, res) => {
   const { username, game, score } = req.body;
   try {
     await userModel.findOneAndUpdate({ username }, {
       $inc: { [`score.${game}`]: score },
     }, { new: true });
+  } catch (err) {
+    return res.status(200).json({ error: err });
+  }
+  res.json({ message: "Successfully" });
+});
+
+app.post("/generateId", async (req, res) => {
+  const { username, name, password } = req.body;
+  try {
+    const user = new userModel({
+      username,
+      name,
+      password
+    });
+    await user.save();
   } catch (err) {
     return res.status(200).json({ error: err });
   }

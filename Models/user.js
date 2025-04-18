@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 //const 
 const stageSchema = new mongoose.Schema({
     type: { type: String, required: true },
-    // stageId: { type: Number, required: true },
     stageId: { type: String, required: true },
     rewardId: { type: Number, required: true },
     startTime: { type: Date, required: true },
@@ -37,14 +36,14 @@ const statSchema = new mongoose.Schema({
 });
 
 const dataSchema = new mongoose.Schema({
-  id : { type: Number, required: true, unique: true },
+  id : { type: Number, unique: true , autoIncrement: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true , default : "1234554321"},
   name : { type: String, required: true },
   discord_id : {type : String, default : ""},
   friend: { type: [String] , default: []},
   stats: {type: statSchema, default: {} },
-  score : { type: scoreSchema, default: 0 },
+  score : { type: scoreSchema, default: {} },
   refreshToken: { type: String, default: null }
 });
 
