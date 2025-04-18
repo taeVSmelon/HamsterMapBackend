@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Approval System</title>
+    <title>Approval System</title>
+    <meta http-equiv="refresh" content="60">
     <style>
         * {
             margin: 0;
@@ -175,10 +176,10 @@
             <h2> Game Section </h2>
         </div>
         <ul class="menu">
-            <li class="menu-item active">python</li>
-            <li class="menu-item">unity</li>
-            <li class="menu-item">blender</li>
-            <li class="menu-item">website</li>
+            <li class="menu-item active" onclick="filter('python')">python</li>
+            <li class="menu-item" onclick="filter('unity')">unity</li>
+            <li class="menu-item" onclick="filter('blender')">blender</li>
+            <li class="menu-item" onclick="filter('website')">website</li>
         </ul>
     </div>
     
@@ -201,7 +202,7 @@
             
             <% data.forEach(item => { %>
                 <div class="game-item">
-                    <img src="<%= games[item.game] %>" alt="Game 1">
+                    <img id="<%= item.game %>" src="<%= games[item.game] %>" alt="Game 1">
                     <div> <%= item.name %> </div>
                     <div> <%= item.stageId %> </div>
                     <div>
@@ -226,7 +227,6 @@
             });
             
         });
-
         async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
             await fetch("./approved", {
                 method: "POST",
@@ -235,6 +235,7 @@
                 },
                 body: JSON.stringify({ username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code }),
             });
+            location.reload();
         }
 
         function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
@@ -244,6 +245,20 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ username}),
+            });
+            location.reload();
+        }
+    
+    </script>
+    <script>
+        function filter(game){
+            const gameItems = document.querySelectorAll(`img[src="${games[game]}"]`);
+            gameItems.forEach(item => {
+                item.parentElement.style.display = 'flex';
+            });
+            const otherItems = document.querySelectorAll(`img:not([src="${games[game]}"])`);
+            otherItems.forEach(item => {
+                item.parentElement.style.display = 'none';
             });
         }
     </script>

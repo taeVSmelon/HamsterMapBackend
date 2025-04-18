@@ -300,9 +300,9 @@ app.get("/backoffice", async (req, res) => {
   res.render("backoffice");
 });
 
-app.get("/test", async (req, res) => {
+app.get("/approveList", async (req, res) => {
   const data = await approveModel.find();
-  res.render("test", { data });
+  res.render("approve", { data });
 });
 
 app.post("/addScore", async (req, res) => {
