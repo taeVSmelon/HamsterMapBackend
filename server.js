@@ -4,7 +4,7 @@ const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
 const http = require("http");
 const querystring = require("querystring");
-const setupWebsocket = require("./websocket.js"); // 👈 ใช้ server จาก websocket
+const { setupWebsocket, getWebSocketWithUsername } = require("./websocket.js"); // 👈 ใช้ server จาก websocket
 const { authenticateToken, JWT_SECRET, checkIsJson } = require(
   "./middlewares/AuthenticateToken.js",
 );
