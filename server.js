@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const WebSocket = require("ws");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
 const approveModel = require("./Models/approve.js");
