@@ -201,8 +201,8 @@
             </div>
             
             <% data.forEach(item => { %>
-                <div class="game-item">
-                    <img id="<%= item.game %>" src="<%= games[item.game] %>" alt="Game 1">
+                <div class="game-item" data-game="<%= item.game %>">
+                    <img src="<%= games[item.game] %>" alt="Game 1">
                     <div> <%= item.name %> </div>
                     <div> <%= item.stageId %> </div>
                     <div>
@@ -215,6 +215,14 @@
     </div>
 
     <script>
+        // Pass the games object from EJS to JavaScript
+        const gameImages = {
+            python: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1200px-Python-logo-notext.svg.png",
+            unity: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMEpvhQOuCkjQFYaax3e8BMa9yk4Y6xt_HUQ&s",
+            blender: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5iU8JDs-L1cYtWNuqQUSVDTi8upS3exaTzA&s",
+            website: "https://cdn-icons-png.flaticon.com/512/5339/5339181.png"
+        };
+        
         // Simple JavaScript for demonstration
         document.addEventListener('DOMContentLoaded', function() {
             // Menu item click
@@ -225,8 +233,8 @@
                     this.classList.add('active');
                 });
             });
-            
         });
+
         async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
             await fetch("./approved", {
                 method: "POST",
@@ -244,21 +252,20 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ username}),
+                body: JSON.stringify({ username }),
             });
             location.reload();
         }
     
-    </script>
-    <script>
-        function filter(game){
-            const gameItems = document.querySelectorAll(`img[src="${games[game]}"]`);
-            gameItems.forEach(item => {
-                item.parentElement.style.display = 'flex';
-            });
-            const otherItems = document.querySelectorAll(`img:not([src="${games[game]}"])`);
-            otherItems.forEach(item => {
-                item.parentElement.style.display = 'none';
+        function filter(game) {
+            // Using data attributes to filter
+            const allItems = document.querySelectorAll('.game-item');
+            allItems.forEach(item => {
+                if (item.getAttribute('data-game') === game) {
+                    item.style.display = 'grid';
+                } else {
+                    item.style.display = 'none';
+                }
             });
         }
     </script>
