@@ -24,7 +24,14 @@ app.set("trust proxy", true);
 app.set("view engine", "ejs");
 
 app.use(cors({
-  origin: '*',
+  origin: function(origin, callback) {
+    const allowedOrigins = ['https://teavsmelon.itch.io', 'https://hamsterhub.itch.io'];
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true); // Allow the origin
+    } else {
+      callback(new Error('Not allowed by CORS')); // Reject the origin
+    }
+  }
 }));
 
 app.use((req, res, next) => {
