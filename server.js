@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const cors = require('cors');
 const WebSocket = require("ws");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
@@ -21,6 +22,10 @@ connectDB();
 app.use(express.json());
 app.set("trust proxy", true);
 app.set("view engine", "ejs");
+
+app.use(cors({
+  origin: '*',
+}));
 
 app.use((req, res, next) => {
   const currentTime = new Date().toISOString();
