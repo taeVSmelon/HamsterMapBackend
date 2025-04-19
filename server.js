@@ -279,7 +279,7 @@ app.post("/sendCode", authenticateToken, async (req, res) => {
       },
     }, { new: true });
     await userModel.findOneAndUpdate({ username }, {
-      $inc: { [`score.${type}`]: 10 },
+      $inc: { [`score.${game}`]: 10 },
     }, { new: true });
   } catch (err) {
     console.log(err);

@@ -119,12 +119,23 @@ const setupWebsocket = (app, server) => {
                 },
                 null,
               );
-              broadcast(activeSockets, { e: "RE", w: true, r: rewardId });
+              broadcast(activeSockets, {
+                e: "RE",
+                w: true,
+                r: rewardId,
+                bu: bestPlayer.username,
+                bd: bestPlayer.damagePercent,
+              });
               broadcast(
                 Object.keys(raidClients).filter((item) =>
                   !activeSockets.includes(item)
                 ),
-                { e: "RE", w: true },
+                {
+                  e: "RE",
+                  w: true,
+                  bu: bestPlayer.username,
+                  bd: bestPlayer.damagePercent,
+                },
               );
               broadcast(notifyClients, {
                 e: "RE",
