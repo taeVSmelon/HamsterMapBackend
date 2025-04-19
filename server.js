@@ -9,8 +9,9 @@ const http = require("http");
 const querystring = require("querystring");
 const { setupWebsocket, getWebSocketWithUsername } = require("./websocket.js"); // 👈 ใช้ server จาก websocket
 const { authenticateToken, JWT_SECRET, checkIsJson } = require(
-  "./middlewares/AuthenticateToken.js",
+  "./middlewares/authenticateToken.js",
 );
+const errorHandler = require("./middlewares/errorHandler.js");
 const jwt = require("jsonwebtoken");
 const app = express();
 const server = http.createServer(app);
@@ -24,21 +25,14 @@ app.set("trust proxy", true);
 app.set("view engine", "ejs");
 
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = ['https://teavsmelon.itch.io', 'https://hamsterhub.itch.io'];
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true); // Allow the origin
-    } else {
-      callback(new Error('Not allowed by CORS')); // Reject the origin
-    }
-  }
+  origin: ['https://html-classic.itch.zone', 'http://localhost']
 }));
 
 app.use((req, res, next) => {
   const currentTime = new Date().toISOString();
   const method = req.method;
   const path = req.originalUrl;
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.ip || req.socket.remoteAddress;
   console.log(`${currentTime} - ${ip} - ${method} - ${path}`);
   next();
 });
@@ -424,6 +418,8 @@ app.post("/rejected", async (req, res) => {
 });
 
 setupWebsocket(app, server);
+
+app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`server listening on ${PORT}`);

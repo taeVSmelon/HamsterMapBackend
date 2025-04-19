@@ -1,5 +1,6 @@
 const RaidBoss = require("./Models/raid.js");
 const WebSocket = require("ws");
+const { parse } = require('url');
 const jwt = require("jsonwebtoken");
 
 const usernameToWs = new Map();
@@ -24,10 +25,11 @@ const setupWebsocket = (app, server) => {
   }
 
   wss.on("connection", (ws, req) => {
-    const { secret, event, token } = req.headers;
+    const parsedUrl = parse(req.url, true);
+    const { token, event, secret } = parsedUrl.query;
 
     if (secret !== WEBHOOK_SECRET) {
-      console.log("WebSocket Unauthorized closed..");
+      console.log(`WebSocket Unauthorized closed.. headers={${secret} ${event} ${token}}`);
       return ws.close(1008, "Unauthorized");
     }
 
