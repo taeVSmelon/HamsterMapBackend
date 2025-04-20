@@ -27,6 +27,7 @@ class RaidBoss {
         { damage, ws: null }
       ])
     );
+    console.log(this.playerJoins);
   }
 
   takeDamage(ws, username, damage) {
