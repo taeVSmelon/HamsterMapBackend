@@ -17,21 +17,24 @@ grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 # Sample walls
 for i in range(5, 16):
     grid[10][i] = 1
+
+for i in range(0, ROWS):
+    grid[i][0] = 1
+
+for i in range(0, ROWS):
+    grid[i][COLS-1] = 1
     
-# for i in range(10, 18):
-#     grid[i][5] = 1
+for i in range(0, COLS):
+    grid[0][i] = 1
     
-# for i in range(5, 16):
-#     grid[17][i] = 1
-    
-# for i in range(10, 18):
-#     grid[i][15] = 1
+for i in range(0, COLS):
+    grid[ROWS-1][i] = 1
 
 # Start and end points as tuples
 start = (2, 2)
 end = (15, 10)
 
-ACTOR_WIDTH, ACTOR_HEIGHT = 4, 2
+ACTOR_WIDTH, ACTOR_HEIGHT = 1, 1
 
 def is_walkable(x, y, width, height):
     for dy in range(height):
