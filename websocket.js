@@ -251,6 +251,7 @@ const setupWebsocket = (app, server) => {
       damage: raidBoss.damage,
       rewardId: raidBoss.rewardId,
       updateHealthChange: raidBoss.updateHealthChange,
+      topScoreReward: raidBoss.topScoreReward,
       playerJoins: sortedPlayers,
     });
   });
