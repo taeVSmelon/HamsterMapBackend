@@ -1,6 +1,6 @@
 const RaidBoss = require("./Models/raid.js");
 const WebSocket = require("ws");
-const { parse } = require('url');
+const { parse } = require("url");
 const jwt = require("jsonwebtoken");
 
 const usernameToWs = new Map();
@@ -29,7 +29,9 @@ const setupWebsocket = (app, server) => {
     const { token, event, secret } = parsedUrl.query;
 
     if (secret !== WEBHOOK_SECRET) {
-      console.log(`WebSocket Unauthorized closed.. headers={${secret} ${event} ${token}}`);
+      console.log(
+        `WebSocket Unauthorized closed.. headers={${secret} ${event} ${token}}`,
+      );
       return ws.close(1008, "Unauthorized");
     }
 
@@ -176,7 +178,7 @@ const setupWebsocket = (app, server) => {
       damage,
       rewardId,
     );
-    
+
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
 
     broadcast(notifyClients, {
@@ -204,6 +206,10 @@ const setupWebsocket = (app, server) => {
   });
 
   app.get("/notify/raid-status", (req, res) => {
+    const sortedPlayers = Array.from(this.playerJoins.entries())
+      .map(([username, data]) => ({ username, damage: data.damage }))
+      .sort((a, b) => b.damage - a.damage);
+
     return res.json({
       active: raidBoss.active,
       boss: raidBoss.bossPrefabName,
@@ -212,9 +218,7 @@ const setupWebsocket = (app, server) => {
       damage: raidBoss.damage,
       rewardId: raidBoss.rewardId,
       updateHealthChange: raidBoss.updateHealthChange,
-      playerJoins: Object.fromEntries(
-        Object.entries(raidBoss.playerJoins).map(([key, value]) => [key, value.damage])
-      )
+      playerJoins: sortedPlayers,
     });
   });
 };
