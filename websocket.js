@@ -204,7 +204,18 @@ const setupWebsocket = (app, server) => {
   });
 
   app.get("/notify/raid-status", (req, res) => {
-    return res.json({ raidBoss });
+    return res.json({
+      active: raidBoss.active,
+      boss: raidBoss.bossPrefabName,
+      maxHealth: raidBoss.maxHealth,
+      health: raidBoss.health,
+      damage: raidBoss.damage,
+      rewardId: raidBoss.rewardId,
+      updateHealthChange: raidBoss.updateHealthChange,
+      playerJoins: Object.fromEntries(
+        Object.entries(raidBoss.playerJoins).map(([key, value]) => [key, value.b])
+      )
+    });
   });
 };
 
