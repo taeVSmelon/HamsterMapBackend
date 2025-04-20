@@ -75,7 +75,7 @@ const setupWebsocket = (app, server) => {
         return;
       }
 
-      ws.on("message", (message) => {
+      ws.on("message", async (message) => {
         let data;
         try {
           data = JSON.parse(message);
@@ -109,19 +109,15 @@ const setupWebsocket = (app, server) => {
               const activeSockets = [...playerJoins]
                 .filter(([_, data]) => data.damage > 0)
                 .map(([_, data]) => data.ws);
-              const bestPlayer = [...playerJoins].reduce(
-                (best, [username, data]) => {
-                  if (!best || data.damage > best.damage) {
-                    return {
-                      username,
-                      damage: data.damage,
-                      damagePercent: data.damage / bossMaxHealth * 100,
-                    };
-                  }
-                  return best;
-                },
-                null,
-              );
+              const sortedPlayers = Array.from(raidBoss.playerJoins.entries())
+                .map(([username, data]) => ({ username, damage: data.damage }))
+                .sort((a, b) => b.damage - a.damage);
+              const bestPlayer = {
+                username: sortedPlayers[0].username,
+                damage: sortedPlayers[0].damage,
+                damagePercent: sortedPlayers[0].damage / bossMaxHealth * 100,
+              };
+
               broadcast(activeSockets, {
                 e: "RE",
                 w: true,
@@ -146,6 +142,35 @@ const setupWebsocket = (app, server) => {
                 bu: bestPlayer.username,
                 bd: bestPlayer.damagePercent,
               });
+
+              const scoreFields = ["python", "unity", "blender", "website"];
+
+              const bulkOps = [];
+
+              for (let i = 0; i < sortedPlayers.length; i++) {
+                const username = sortedPlayers[i].username;
+                const updated = {};
+
+                for (const field of scoreFields) {
+                  if (raidBoss.topScoreReward[field]) {
+                    const scoreToAdd = raidBoss.topScoreReward[field]?.[i] || 0;
+                    updated[`score.${field}`] = scoreToAdd;
+                  }
+                }
+
+                bulkOps.push({
+                  updateOne: {
+                    filter: { username },
+                    update: {
+                      $inc: updated,
+                    },
+                  },
+                });
+              }
+
+              if (bulkOps.length > 0) {
+                await userModel.bulkWrite(bulkOps);
+              }
             }
             break;
         }
@@ -168,7 +193,7 @@ const setupWebsocket = (app, server) => {
       health,
       damage,
       rewardId,
-      topScoreReward
+      topScoreReward,
     } = req.body;
     if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
@@ -184,7 +209,7 @@ const setupWebsocket = (app, server) => {
       health ?? maxHealth,
       damage,
       rewardId,
-      topScoreReward ?? {}
+      topScoreReward ?? {},
     );
 
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
@@ -214,37 +239,9 @@ const setupWebsocket = (app, server) => {
   });
 
   app.get("/notify/raid-status", async (req, res) => {
-    const scoreFields = ["python", "unity", "blender", "website"];
     const sortedPlayers = Array.from(raidBoss.playerJoins.entries())
       .map(([username, data]) => ({ username, damage: data.damage }))
       .sort((a, b) => b.damage - a.damage);
-      
-    const bulkOps = [];
-
-    for (let i = 0; i < sortedPlayers.length; i++) {
-      const username = sortedPlayers[i].username;
-      const updated = {};
-
-      for (const field of scoreFields) {
-        if (raidBoss.topScoreReward[field]) {
-          const scoreToAdd = raidBoss.topScoreReward[field]?.[i] || 0;
-          updated[`score.${field}`] = scoreToAdd;
-        }
-      }
-
-      bulkOps.push({
-        updateOne: {
-          filter: { username },
-          update: {
-            $inc: updated,
-          },
-        },
-      });
-    }
-
-    if (bulkOps.length > 0) {
-      await userModel.bulkWrite(bulkOps);
-    }
 
     return res.json({
       active: raidBoss.active,
