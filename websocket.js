@@ -238,7 +238,7 @@ const setupWebsocket = (app, server) => {
     return res.json({ sent: true });
   });
 
-  app.get("/notify/raid-status", async (req, res) => {
+  app.get("/notify/raid-status", (req, res) => {
     const sortedPlayers = Array.from(raidBoss.playerJoins.entries())
       .map(([username, data]) => ({ username, damage: data.damage }))
       .sort((a, b) => b.damage - a.damage);

@@ -43,19 +43,19 @@ class RaidBoss {
   }
 
   deactivate() {
-    this.reset();
+    this.active = false;
   }
 
   reset() {
     this.active = false;
-    // this.bossPrefabName = null;
-    // this.maxHealth = 0;
-    // this.health = 0;
-    // this.damage = 0;
-    // this.rewardId = null;
-    // this.topScoreReward = new Map();
-    // this.updateHealthChange = 0;
-    // this.playerJoins = new Map();
+    this.bossPrefabName = null;
+    this.maxHealth = 0;
+    this.health = 0;
+    this.damage = 0;
+    this.rewardId = null;
+    this.topScoreReward = new Map();
+    this.updateHealthChange = 0;
+    this.playerJoins = new Map();
   }
 }
 
