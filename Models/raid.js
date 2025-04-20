@@ -9,7 +9,6 @@ class RaidBoss {
     health,
     damage,
     rewardId,
-    topScoreReward,
   ) {
     this.active = true;
     this.bossPrefabName = bossPrefabName;
@@ -17,7 +16,6 @@ class RaidBoss {
     this.health = health;
     this.damage = damage;
     this.rewardId = rewardId;
-    this.topScoreReward = topScoreReward;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
     this.playerJoins = new Map();
@@ -54,7 +52,7 @@ class RaidBoss {
     this.damage = 0;
     this.rewardId = null;
     this.updateHealthChange = 0;
-    this.playerJoins = new Map();
+    // this.playerJoins = new Map();
   }
 }
 
