@@ -1,4 +1,5 @@
 const RaidBoss = require("./Models/raid.js");
+const userModel = require("./Models/user.js");
 const WebSocket = require("ws");
 const { parse } = require("url");
 const jwt = require("jsonwebtoken");
@@ -162,7 +163,14 @@ const setupWebsocket = (app, server) => {
 
   // API Routes
   app.post("/notify/start-raid", (req, res) => {
-    const { bossPrefabName, maxHealth, health, damage, rewardId } = req.body;
+    const {
+      bossPrefabName,
+      maxHealth,
+      health,
+      damage,
+      rewardId,
+      topScoreReward,
+    } = req.body;
     if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
     }
@@ -177,6 +185,7 @@ const setupWebsocket = (app, server) => {
       health ?? maxHealth,
       damage,
       rewardId,
+      topScoreReward ?? [],
     );
 
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
@@ -205,10 +214,32 @@ const setupWebsocket = (app, server) => {
     return res.json({ sent: true });
   });
 
-  app.get("/notify/raid-status", (req, res) => {
+  app.get("/notify/raid-status", async (req, res) => {
     const sortedPlayers = Array.from(raidBoss.playerJoins.entries())
       .map(([username, data]) => ({ username, damage: data.damage }))
       .sort((a, b) => b.damage - a.damage);
+
+    const bulkOps = [];
+
+    for (
+      let i = 0;
+      i < raidBoss.topScoreReward.length;
+      i++
+    ) {
+      const username = sortedPlayers[i].username;
+      const score = raidBoss.topScoreReward[i];
+
+      bulkOps.push({
+        updateOne: {
+          filter: { username },
+          update: { $inc: { [`score.${game}`]: score } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      await userModel.bulkWrite(bulkOps);
+    }
 
     return res.json({
       active: raidBoss.active,

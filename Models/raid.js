@@ -3,13 +3,21 @@ class RaidBoss {
     this.reset();
   }
 
-  activate(bossPrefabName, maxHealth, health, damage, rewardId) {
+  activate(
+    bossPrefabName,
+    maxHealth,
+    health,
+    damage,
+    rewardId,
+    topScoreReward,
+  ) {
     this.active = true;
     this.bossPrefabName = bossPrefabName;
     this.maxHealth = maxHealth;
     this.health = health;
     this.damage = damage;
     this.rewardId = rewardId;
+    this.topScoreReward = topScoreReward;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
     this.playerJoins = new Map();
@@ -17,7 +25,11 @@ class RaidBoss {
 
   takeDamage(ws, username, damage) {
     this.health = Math.min(Math.max(0, this.health - damage), this.maxHealth);
-    this.playerJoins.set(username, { ws, damage });
+    const existing = this.playerJoins.get(username);
+    this.playerJoins.set(username, {
+      ws,
+      damage: existing ? existing.damage + damage : damage,
+    });
 
     const currentPercent = Math.floor((this.health / this.maxHealth) * 100) /
       100;
