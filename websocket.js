@@ -213,7 +213,7 @@ const setupWebsocket = (app, server) => {
       rewardId: raidBoss.rewardId,
       updateHealthChange: raidBoss.updateHealthChange,
       playerJoins: Object.fromEntries(
-        Object.entries(raidBoss.playerJoins).map(([key, value]) => [key, value.b])
+        Object.entries(raidBoss.playerJoins).map(([key, value]) => [key, value.damage])
       )
     });
   });
