@@ -1,6 +1,6 @@
 const express = require("express");
 const axios = require("axios");
-const cors = require('cors');
+const cors = require("cors");
 const WebSocket = require("ws");
 const connectDB = require("./db.js");
 const userModel = require("./Models/user.js");
@@ -25,7 +25,7 @@ app.set("trust proxy", true);
 app.set("view engine", "ejs");
 
 app.use(cors({
-  origin: ['https://html-classic.itch.zone', 'http://localhost']
+  origin: ["https://html-classic.itch.zone", "http://localhost"],
 }));
 
 app.use((req, res, next) => {
@@ -108,14 +108,14 @@ app.post("/refreshToken", async (req, res) => {
 
       const accessTokenExpiredTime = new Date();
       accessTokenExpiredTime.setHours(accessTokenExpiredTime.getHours() + 1);
-    
+
       const accessTokenExpired = Math.floor(
         accessTokenExpiredTime.getTime() / 1000,
       );
 
       return res.json({
         accessToken,
-        accessTokenExpired
+        accessTokenExpired,
       });
     } else {
       return res.status(403).json({ error: "Token expired" });
@@ -265,22 +265,28 @@ app.get("/leaderBoard/:game", async (req, res) => {
 app.post("/sendCode", authenticateToken, async (req, res) => {
   const { type, stageId, code, startTime, endTime, itemUseds, game } = req.body;
   const username = req.username;
+  const user = await userModel.findOne({ username });
   try {
-    await userModel.findOneAndUpdate({ username }, {
-      $push: {
-        [`stats.clearedStages.${game}`]: {
-          type,
-          stageId,
-          code,
-          startTime,
-          endTime,
-          itemUseds,
+    const clearedStages = user.stats.clearedStages[game];
+    const clearedStage = clearedStages.find((c) => c.stageId == stageId);
+
+    if (!clearedStage) {
+      await userModel.findOneAndUpdate({ username }, {
+        $push: {
+          [`stats.clearedStages.${game}`]: {
+            type,
+            stageId,
+            code,
+            startTime,
+            endTime,
+            itemUseds,
+          },
         },
-      },
-    }, { new: true });
-    await userModel.findOneAndUpdate({ username }, {
-      $inc: { [`score.${game}`]: 10 },
-    }, { new: true });
+      }, { new: true });
+      await userModel.findOneAndUpdate({ username }, {
+        $inc: { [`score.${game}`]: 10 },
+      }, { new: true });
+    }
   } catch (err) {
     console.log(err);
     return res.status(200).json({ error: err });
@@ -323,10 +329,10 @@ app.post("/addScore", async (req, res) => {
       ws.send(JSON.stringify({
         e: "N",
         m: `Your ${game} score added ${score} points`,
-        c: "#FFC90E"
+        c: "#FFC90E",
       }));
       ws.send(JSON.stringify({
-        e: "LS"
+        e: "LS",
       }));
     }
   } catch (err) {
@@ -341,7 +347,7 @@ app.post("/generateId", async (req, res) => {
     const user = new userModel({
       username,
       name,
-      password
+      password,
     });
     await user.save();
   } catch (err) {
@@ -351,7 +357,17 @@ app.post("/generateId", async (req, res) => {
 });
 
 app.post("/sendApprove", async (req, res) => {
-  const { username, name, game, type, stageId, startTime, endTime, itemUseds, code } = req.body;
+  const {
+    username,
+    name,
+    game,
+    type,
+    stageId,
+    startTime,
+    endTime,
+    itemUseds,
+    code,
+  } = req.body;
   try {
     await approveModel.create({
       username,
@@ -362,7 +378,7 @@ app.post("/sendApprove", async (req, res) => {
       startTime,
       endTime,
       itemUseds,
-      code
+      code,
     });
   } catch (err) {
     console.log(err);
@@ -372,7 +388,8 @@ app.post("/sendApprove", async (req, res) => {
 });
 
 app.post("/approved", async (req, res) => {
-  const { username, game, type, stageId, startTime, endTime, itemUseds, code } = req.body;
+  const { username, game, type, stageId, startTime, endTime, itemUseds, code } =
+    req.body;
   try {
     await userModel.findOneAndUpdate({ username }, {
       $push: {
@@ -391,7 +408,7 @@ app.post("/approved", async (req, res) => {
     const ws = getWebSocketWithUsername(username);
     if (ws != null && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
-        e: "LS"
+        e: "LS",
       }));
     }
   } catch (err) {
@@ -408,7 +425,7 @@ app.post("/rejected", async (req, res) => {
     const ws = getWebSocketWithUsername(username);
     if (ws != null && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
-        e: "LS"
+        e: "LS",
       }));
     }
   } catch (err) {
