@@ -3,8 +3,20 @@ import time
 
 client = MongoClient('mongodb+srv://admin:mark6506@cluster0.0tcdjdu.mongodb.net/PHC_TestV2')
 
-results = client['PHC_TestV2']['Approve'].find()
+db = client['PHC_TestV2']
+collection = db['UserData']
 
-for result in results:
-    if str(result["username"]).lower().startswith("icez"):
-        print(result)
+# อัปเดต field ที่กำหนดไว้เท่านั้น
+result = collection.update_many(
+    {},  # อัปเดตทุก document
+    {
+        "$max": {
+            "score.python": 0,
+            "score.unity": 0,
+            "score.blender": 0,
+            "score.website": 0
+        }
+    }
+)
+
+print(f"Matched: {result.matched_count}, Modified: {result.modified_count}")
