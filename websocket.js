@@ -194,6 +194,7 @@ const setupWebsocket = (app, server) => {
       damage,
       rewardId,
       topScoreReward,
+      playerJoins
     } = req.body;
     if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
@@ -209,7 +210,8 @@ const setupWebsocket = (app, server) => {
       health ?? maxHealth,
       damage,
       rewardId,
-      topScoreReward ?? {},
+      topScoreReward ?? [],
+      playerJoins ?? []
     );
 
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);

@@ -10,6 +10,7 @@ class RaidBoss {
     damage,
     rewardId,
     topScoreReward,
+    playerJoins
   ) {
     this.active = true;
     this.bossPrefabName = bossPrefabName;
@@ -20,7 +21,12 @@ class RaidBoss {
     this.topScoreReward = topScoreReward;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
-    this.playerJoins = new Map();
+    this.playerJoins =  Object.fromEntries(
+      playerJoins.map(({ username, damage }) => [
+        username,
+        { damage, ws: null }
+      ])
+    );
   }
 
   takeDamage(ws, username, damage) {
