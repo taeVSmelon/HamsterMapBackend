@@ -125,7 +125,7 @@
             object-fit: cover;
         }
         
-        .approve-btn, .reject-btn {
+        .approve-btn, .reject-btn, .code-btn {
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
@@ -141,6 +141,11 @@
         
         .reject-btn {
             background-color: #e74c3c;
+            color: white;
+        }
+        
+        .code-btn {
+            background-color: #3ca8e7;
             color: white;
         }
         
@@ -199,14 +204,15 @@
                 <div>Stage Number</div>
                 <div>Actions</div>
             </div>
-            
             <% data.forEach(item => { %>
                 <div class="game-item" data-game="<%= item.game %>">
                     <img src="<%= games[item.game] %>" alt="Game 1">
                     <div> <%= item.name %> </div>
+                    <span id="<%= item.name %> <%= item.stageId %>" style="display: none;"><%= item.code %></span>
                     <div> <%= item.stageId %> </div>
                     <div>
-                        <button class="approve-btn" onclick="approve('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>', '')">Approve</button>
+                        <button class="approve-btn" onclick="approve('<%= item.username %>', '<%= item.game %>', '<%= item.type %>', '<%= item.stageId %>', '<%= item.rewardId %>', '<%= item.startTime %>', '<%= item.endTime %>', '<%= item.itemUseds %>')">Approve</button>
+                        <% if (item.code) { %><button class="code-btn" onclick="showCode('<%= item.username %>', '<%= item.stageId %>')">Code</button><% } %>
                         <button class="reject-btn" onclick="joke()">Reject</button>
                     </div>
                 </div>
@@ -235,7 +241,8 @@
             });
         });
 
-        async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
+        async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds) {
+            const code = document.getElementById(`${username} ${stageId}`).innerText;
             await fetch("./approved", {
                 method: "POST",
                 headers: {
@@ -246,7 +253,12 @@
             location.reload();
         }
 
-        function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds, code) {
+        function showCode(username, stageId) {
+            const code = document.getElementById(`${username} ${stageId}`).innerText;
+            alert(code);
+        }
+
+        function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds) {
             fetch("./rejected", {
                 method: "POST",
                 headers: {
@@ -256,9 +268,11 @@
             });
             location.reload();
         }
+
         function joke(){
             alert("ไม่ได้ทำครับ");
         }
+
         function filter(game) {
             // Using data attributes to filter
             const allItems = document.querySelectorAll('.game-item');
