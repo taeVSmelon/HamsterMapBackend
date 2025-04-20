@@ -161,7 +161,6 @@ const setupWebsocket = (app, server) => {
     });
   });
 
-  // API Routes
   app.post("/notify/start-raid", (req, res) => {
     const {
       bossPrefabName,
