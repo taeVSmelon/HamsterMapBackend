@@ -46,12 +46,12 @@ class RaidBoss {
 
   reset() {
     this.active = false;
-    this.bossPrefabName = null;
-    this.maxHealth = 0;
-    this.health = 0;
-    this.damage = 0;
-    this.rewardId = null;
-    this.updateHealthChange = 0;
+    // this.bossPrefabName = null;
+    // this.maxHealth = 0;
+    // this.health = 0;
+    // this.damage = 0;
+    // this.rewardId = null;
+    // this.updateHealthChange = 0;
     // this.playerJoins = new Map();
   }
 }
