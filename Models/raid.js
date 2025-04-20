@@ -21,13 +21,12 @@ class RaidBoss {
     this.topScoreReward = topScoreReward;
     this.updateHealthChange = Math.floor((this.health / this.maxHealth) * 100) /
       100;
-    this.playerJoins =  Object.fromEntries(
+    this.playerJoins =  new Map(
       playerJoins.map(({ username, damage }) => [
         username,
         { damage, ws: null }
       ])
     );
-    console.log(this.playerJoins);
   }
 
   takeDamage(ws, username, damage) {
