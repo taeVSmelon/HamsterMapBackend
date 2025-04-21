@@ -158,14 +158,16 @@ const setupWebsocket = (app, server) => {
                   }
                 }
 
-                bulkOps.push({
-                  updateOne: {
-                    filter: { username },
-                    update: {
-                      $inc: updated,
+                if (Object.keys(updated).length > 0) {
+                  bulkOps.push({
+                    updateOne: {
+                      filter: { username },
+                      update: {
+                        $inc: updated,
+                      },
                     },
-                  },
-                });
+                  });
+                }
               }
 
               if (bulkOps.length > 0) {
