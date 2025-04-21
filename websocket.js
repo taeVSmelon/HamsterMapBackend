@@ -19,7 +19,7 @@ const setupWebsocket = (app, server) => {
   function broadcast(clients, payload) {
     const message = JSON.stringify(payload);
     for (const ws of clients) {
-      if (ws.readyState === WebSocket.OPEN) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(message);
       }
     }
