@@ -71,12 +71,16 @@
       color: white;
     }
 
-    .player-game-join {
-      padding-left: 20px;
-    }
+.player-game-score {
+  padding-left: 20px;
+}
+
+.player-score {
+  padding-left: 20px;
+}
 
     .player-join {
-      padding-left: 40px;
+      padding-left: 20px;
     }
   </style>
 </head>
@@ -94,11 +98,11 @@
       </h2>
       <br>
       <% for (const game in raidBoss.topScoreReward) { const scores=raidBoss.topScoreReward[game]; %>
-        <h3 class="player-game-join">
+        <h3 class="player-game-score">
           <%= game %> scores
         </h3>
         <% for (let i=0; i < scores.length; i++) { const score=scores[i]; %>
-          <h4 class="player-join">
+          <h4 class="player-score">
             <%= `ที่ ${i + 1} ได้ ${score}` %>
           </h4>
           <% } %>
