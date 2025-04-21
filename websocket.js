@@ -196,7 +196,7 @@ const setupWebsocket = (app, server) => {
       damage,
       rewardId,
       topScoreReward,
-      playerJoins
+      playerJoins,
     } = req.body;
     if (!bossPrefabName || !maxHealth || !damage) {
       return res.status(400).json({ error: "Missing data" });
@@ -213,7 +213,7 @@ const setupWebsocket = (app, server) => {
       damage,
       rewardId,
       topScoreReward ?? [],
-      playerJoins ?? []
+      playerJoins ?? [],
     );
 
     console.log(`Raid started: ${bossPrefabName} (${maxHealth}, ${damage})`);
@@ -257,6 +257,26 @@ const setupWebsocket = (app, server) => {
       updateHealthChange: raidBoss.updateHealthChange,
       topScoreReward: raidBoss.topScoreReward,
       playerJoins: sortedPlayers,
+    });
+  });
+
+  app.get("/raidManager", async (req, res) => {
+    const sortedPlayers = Array.from(raidBoss.playerJoins.entries())
+      .map(([username, data]) => ({ username, damage: data.damage }))
+      .sort((a, b) => b.damage - a.damage);
+
+    res.render("raid", {
+      raidBoss: {
+        active: raidBoss.active,
+        boss: raidBoss.bossPrefabName,
+        maxHealth: raidBoss.maxHealth,
+        health: raidBoss.health,
+        damage: raidBoss.damage,
+        rewardId: raidBoss.rewardId,
+        updateHealthChange: raidBoss.updateHealthChange,
+        topScoreReward: raidBoss.topScoreReward,
+        playerJoins: sortedPlayers,
+      },
     });
   });
 };
