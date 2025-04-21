@@ -242,7 +242,7 @@
         });
 
         async function approve(username, game, type, stageId, rewardId, startTime, endTime, itemUseds) {
-            const code = document.getElementById(`${username} ${stageId}`).innerText;
+            const code = document.getElementById(`${username} ${stageId}`)?.innerText;
             await fetch("./approved", {
                 method: "POST",
                 headers: {
@@ -254,8 +254,9 @@
         }
 
         function showCode(username, stageId) {
-            const code = document.getElementById(`${username} ${stageId}`).innerText;
-            alert(code);
+            const code = document.getElementById(`${username} ${stageId}`)?.innerText;
+            if (code)
+                alert(code);
         }
 
         function reject(username, game, type, stageId, rewardId, startTime, endTime, itemUseds) {
